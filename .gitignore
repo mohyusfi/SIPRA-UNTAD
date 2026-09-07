@@ -1,0 +1,7 @@
+client_secret*
+.env
+node_modules/
+dist/
+.output/
+.nitro/
+*.log

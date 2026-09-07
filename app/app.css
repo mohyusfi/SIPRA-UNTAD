@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  --color-canvas-purple: #DDD6FE;
+  --color-canvas-surface: #FAF8F5;
+  --color-canvas-pure: #FFFFFF;
+
+  --color-ink-primary: #09090B;
+  --color-ink-muted: #52525B;
+  --color-ink-faint: #A1A1AA;
+
+  --color-brand-lilac: #C4B5FD;
+  --color-brand-lilac-hover: #A78BFA;
+  --color-brand-lime: #D9F99D;
+  --color-brand-lime-accent: #BEF264;
+
+  --color-status-submitted: #FEF08A;
+  --color-status-verified: #A5F3FC;
+  --color-status-assigned: #BAE6FD;
+  --color-status-in-progress: #FED7AA;
+  --color-status-review: #E9D5FF;
+  --color-status-completed: #D9F99D;
+  --color-status-rejected: #FECDD3;
+  --color-status-duplicate: #E2E8F0;
+
+  --color-urgency-normal: #E0E7FF;
+  --color-urgency-high: #FDE68A;
+  --color-urgency-emergency: #FCA5A5;
+
+  --shadow-neo-sm: 2px 2px 0px 0px #09090B;
+  --shadow-neo: 4px 4px 0px 0px #09090B;
+  --shadow-neo-lg: 6px 6px 0px 0px #09090B;
+  --shadow-neo-xl: 8px 8px 0px 0px #09090B;
+
+  --font-display: "Space Grotesk", "Plus Jakarta Sans", sans-serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+body {
+  background-color: var(--color-canvas-purple);
+  color: var(--color-ink-primary);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
