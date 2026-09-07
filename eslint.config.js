@@ -25,6 +25,7 @@ export default tsPlugin.config(
       'node_modules/**',
       'dist/**',
       '.output/**',
+      '.vercel/**',
       'drizzle/**',
       'app/routeTree.gen.ts',
     ],
