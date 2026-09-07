@@ -253,4 +253,8 @@ export const reportTimelineRelations = relations(reportTimeline, ({ one }) => ({
     fields: [reportTimeline.reportId],
     references: [reports.id],
   }),
+  actor: one(user, {
+    fields: [reportTimeline.actorId],
+    references: [user.id],
+  }),
 }))

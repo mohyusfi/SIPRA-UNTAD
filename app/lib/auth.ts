@@ -1,6 +1,8 @@
 import { betterAuth } from 'better-auth'
+import { APIError } from 'better-auth/api'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
+import { eq } from 'drizzle-orm'
 import { db } from '~/db'
 import * as schema from '~/db/schema'
 
@@ -10,6 +12,11 @@ export const auth = betterAuth({
     schema,
   }),
   baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
+  trustedOrigins: [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:5173',
+  ],
   secret: process.env.BETTER_AUTH_SECRET,
   emailAndPassword: {
     enabled: true,
@@ -30,6 +37,30 @@ export const auth = betterAuth({
         input: false,
       },
     },
+  },
+  databaseHooks: {
+    session: {
+      create: {
+        before: async (session, ctx) => {
+          if (ctx?.path?.includes('callback')) {
+            const [u] = await db
+              .select({ role: schema.user.role })
+              .from(schema.user)
+              .where(eq(schema.user.id, session.userId))
+
+            if (u && u.role !== 'reporter') {
+              throw new APIError('FORBIDDEN', {
+                message: 'staff_oauth_forbidden',
+              })
+            }
+          }
+          return { data: session }
+        },
+      },
+    },
+  },
+  onAPIError: {
+    errorURL: '/login',
   },
   plugins: [tanstackStartCookies()],
 })

@@ -1,6 +1,8 @@
 import 'dotenv/config'
+import { eq } from 'drizzle-orm'
 import { db } from './index'
-import { categories, locations } from './schema'
+import { categories, locations, user } from './schema'
+import { auth } from '../lib/auth'
 
 async function seed() {
   console.log('Seeding master data UNTAD...')
@@ -72,6 +74,66 @@ async function seed() {
 
   for (const loc of initialLocations) {
     await db.insert(locations).values(loc).onConflictDoNothing()
+  }
+
+  console.log('Seeding akun uji coba UNTAD...')
+  const initialUsers = [
+    {
+      name: 'Admin Sarpras UNTAD',
+      email: 'admin@untad.ac.id',
+      password: 'Password123!',
+      role: 'admin',
+    },
+    {
+      name: 'Teknisi Lapangan UNTAD',
+      email: 'teknisi@untad.ac.id',
+      password: 'Password123!',
+      role: 'technician',
+    },
+    {
+      name: 'Pemantau & Pimpinan UNTAD',
+      email: 'pemantau@untad.ac.id',
+      password: 'Password123!',
+      role: 'monitor',
+    },
+    {
+      name: 'Pelapor Sivitas UNTAD',
+      email: 'pelapor@untad.ac.id',
+      password: 'Password123!',
+      role: 'reporter',
+    },
+  ]
+
+  for (const u of initialUsers) {
+    const [existing] = await db
+      .select({ id: user.id })
+      .from(user)
+      .where(eq(user.email, u.email))
+
+    if (!existing) {
+      try {
+        await auth.api.signUpEmail({
+          body: {
+            name: u.name,
+            email: u.email,
+            password: u.password,
+          },
+        })
+        await db
+          .update(user)
+          .set({ role: u.role })
+          .where(eq(user.email, u.email))
+        console.log(`Akun dibuat: ${u.email} (${u.role})`)
+      } catch (err) {
+        console.error(`Gagal membuat akun ${u.email}:`, err)
+      }
+    } else {
+      await db
+        .update(user)
+        .set({ role: u.role })
+        .where(eq(user.email, u.email))
+      console.log(`Akun sudah ada, role diperbarui: ${u.email} (${u.role})`)
+    }
   }
 
   console.log('Seeding selesai!')

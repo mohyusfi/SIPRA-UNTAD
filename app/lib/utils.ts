@@ -14,3 +14,12 @@ export function generateTrackingCode(): string {
   const year = new Date().getFullYear()
   return `UNTAD-${year}-${randomPart}`
 }
+
+export function formatDate(date: Date | string | number): string {
+  const d = new Date(date)
+  return new Intl.DateTimeFormat('id-ID', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'Asia/Makassar',
+  }).format(d)
+}

@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { Link } from '@tanstack/react-router'
-import { Radio, Search, LogIn, ArrowLeft } from 'lucide-react'
+import { Radio, Search, LogIn, ArrowLeft, LayoutDashboard } from 'lucide-react'
+import { authClient } from '~/lib/auth-client'
 
 interface PublicNavbarProps {
   subtitle?: string
@@ -11,6 +12,9 @@ export function PublicNavbar({
   subtitle = 'Sistem Pelaporan Infrastruktur Kampus',
   isTrackPage = false,
 }: PublicNavbarProps) {
+  const { data: session } = authClient.useSession()
+  const user = session?.user
+
   return (
     <>
       {/* Tier 1: Utility Bar (Desktop Only) */}
@@ -34,18 +38,28 @@ export function PublicNavbar({
         </div>
         <div className="flex items-center gap-3 shrink-0">
           <span className="font-mono">WITA (UTC+8)</span>
-          {!isTrackPage && (
+          {!isTrackPage ? (
             <>
               <span>•</span>
-              <Link
-                to="/login"
-                className="flex items-center gap-1 hover:underline cursor-pointer"
-              >
-                <LogIn className="w-3.5 h-3.5" strokeWidth={2.5} />
-                <span>Masuk Sivitas</span>
-              </Link>
+              {user ? (
+                <Link
+                  to="/dashboard"
+                  className="flex items-center gap-1 hover:underline cursor-pointer"
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5" strokeWidth={2.5} />
+                  <span>Dashboard ({user.name || 'Pengguna'})</span>
+                </Link>
+              ) : (
+                <Link
+                  to="/login"
+                  className="flex items-center gap-1 hover:underline cursor-pointer"
+                >
+                  <LogIn className="w-3.5 h-3.5" strokeWidth={2.5} />
+                  <span>Masuk Sivitas</span>
+                </Link>
+              )}
             </>
-          )}
+          ) : null}
         </div>
       </header>
 
@@ -84,13 +98,23 @@ export function PublicNavbar({
                 <span>Lacak Tiket</span>
               </Link>
 
-              <Link
-                to="/login"
-                className="px-4 py-2 font-bold text-xs md:text-sm bg-[#C4B5FD] text-[#09090B] border-2 border-[#09090B] shadow-[3px_3px_0_0_#09090B] hover:bg-[#A78BFA] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0_0_#09090B] transition-all flex items-center gap-1.5 cursor-pointer"
-              >
-                <LogIn className="w-4 h-4" strokeWidth={2.5} />
-                <span>Masuk</span>
-              </Link>
+              {user ? (
+                <Link
+                  to="/dashboard"
+                  className="px-4 py-2 font-bold text-xs md:text-sm bg-[#D9F99D] text-[#09090B] border-2 border-[#09090B] shadow-[3px_3px_0_0_#09090B] hover:bg-[#BEF264] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0_0_#09090B] transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <LayoutDashboard className="w-4 h-4" strokeWidth={2.5} />
+                  <span>Panel Dashboard</span>
+                </Link>
+              ) : (
+                <Link
+                  to="/login"
+                  className="px-4 py-2 font-bold text-xs md:text-sm bg-[#C4B5FD] text-[#09090B] border-2 border-[#09090B] shadow-[3px_3px_0_0_#09090B] hover:bg-[#A78BFA] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0_0_#09090B] transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <LogIn className="w-4 h-4" strokeWidth={2.5} />
+                  <span>Masuk</span>
+                </Link>
+              )}
             </>
           )}
         </div>
