@@ -1,7 +1,28 @@
+import * as React from 'react'
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { Wrench, Clock, Camera, CheckCircle } from 'lucide-react'
+import {
+  Wrench,
+  Clock,
+  Camera,
+  CheckCircle,
+  Search,
+  RotateCcw,
+  Check,
+  AlertTriangle,
+} from 'lucide-react'
 import { getCurrentUserSession } from '~/lib/auth-server'
 import { DashboardHeader } from '~/features/dashboard/components/dashboard-header'
+import {
+  getTechnicianTasks,
+  startTaskAction,
+} from '~/features/technician/technician.fn'
+import {
+  TaskCard,
+  type TechnicianTaskItem,
+} from '~/features/technician/components/task-card'
+import {
+  CompletionModal,
+} from '~/features/technician/components/completion-modal'
 
 export const Route = createFileRoute('/dashboard/technician')({
   beforeLoad: async () => {
@@ -19,92 +40,364 @@ export const Route = createFileRoute('/dashboard/technician')({
     return { user: session.user }
   },
   loader: async ({ context }: { context: { user: any } }) => {
-    return { user: context.user }
+    const data = await getTechnicianTasks({
+      data: { tab: 'all', search: '' },
+    })
+    return {
+      user: context.user,
+      initialTasks: data.tasks,
+      initialStats: data.stats,
+    }
   },
   component: TechnicianDashboardPage,
 })
 
 function TechnicianDashboardPage() {
-  const { user } = Route.useLoaderData()
+  const { user, initialTasks, initialStats } = Route.useLoaderData()
+
+  const [selectedTab, setSelectedTab] = React.useState<
+    'all' | 'assigned' | 'in_progress' | 'review' | 'completed'
+  >('all')
+  const [searchQuery, setSearchQuery] = React.useState('')
+  const [tasks, setTasks] = React.useState<TechnicianTaskItem[]>(initialTasks as any)
+  const [stats, setStats] = React.useState(initialStats)
+  const [isFetching, setIsFetching] = React.useState(false)
+
+  const [startingTaskId, setStartingTaskId] = React.useState<string | null>(null)
+  const [completionTask, setCompletionTask] = React.useState<TechnicianTaskItem | null>(null)
+  const [successToast, setSuccessToast] = React.useState<string | null>(null)
+
+  const showToast = (message: string) => {
+    setSuccessToast(message)
+    setTimeout(() => {
+      setSuccessToast(null)
+    }, 4000)
+  }
+
+  const reloadData = async (
+    tab = selectedTab,
+    search = searchQuery,
+  ) => {
+    setIsFetching(true)
+    try {
+      const res = await getTechnicianTasks({
+        data: { tab, search },
+      })
+      setTasks(res.tasks as any)
+      setStats(res.stats)
+    } finally {
+      setIsFetching(false)
+    }
+  }
+
+  const handleTabChange = (
+    tab: 'all' | 'assigned' | 'in_progress' | 'review' | 'completed',
+  ) => {
+    setSelectedTab(tab)
+    reloadData(tab, searchQuery)
+  }
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    reloadData(selectedTab, searchQuery)
+  }
+
+  const handleStartTask = async (taskId: string) => {
+    setStartingTaskId(taskId)
+    try {
+      await startTaskAction({ data: { reportId: taskId } })
+      showToast('Pengerjaan perbaikan telah dimulai. Status kini Dalam Pengerjaan.')
+      await reloadData()
+    } catch (err: any) {
+      alert(err.message || 'Gagal memulai pengerjaan tugas.')
+    } finally {
+      setStartingTaskId(null)
+    }
+  }
+
+  const handleOpenCompleteModal = (task: TechnicianTaskItem) => {
+    setCompletionTask(task)
+  }
+
+  const handleCompletionSuccess = async () => {
+    showToast('Bukti perbaikan dan catatan teknis berhasil dikirim ke Admin Sarpras.')
+    await reloadData()
+  }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#DDD6FE]">
+    <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
       <DashboardHeader
         user={user}
         roleLabel="Teknisi Lapangan"
         roleColor="bg-[#FED7AA]"
       />
 
-      <main className="flex-1 p-4 md:p-8 max-w-6xl mx-auto w-full">
-        {/* Welcome Banner */}
-        <div className="border-2 border-[#09090B] bg-[#FAF8F5] p-6 shadow-[6px_6px_0_0_#09090B] mb-8">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="px-2 py-0.5 text-[10px] font-extrabold uppercase border border-[#09090B] bg-[#FED7AA]">
-              Peran: Petugas Teknisi Lapangan
-            </span>
+      {/* Success Notification Toast */}
+      {successToast && (
+        <div className="fixed top-20 right-4 z-50 flex items-center gap-2 border-2 border-[#09090B] bg-[#D9F99D] px-4 py-3 shadow-[4px_4px_0_0_#09090B] animate-bounce">
+          <Check className="w-5 h-5 text-[#09090B]" />
+          <span className="text-xs md:text-sm font-extrabold text-[#09090B]">
+            {successToast}
+          </span>
+        </div>
+      )}
+
+      <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
+        {/* Banner Section */}
+        <div className="border-2 border-[#09090B] bg-white p-6 shadow-[6px_6px_0_0_#09090B] mb-8">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="px-2 py-0.5 text-[10px] font-extrabold uppercase border border-[#09090B] bg-[#FED7AA]">
+                  Staf Operasional Sarpras
+                </span>
+                <span className="px-2 py-0.5 text-[10px] font-extrabold uppercase border border-[#09090B] bg-[#BAE6FD]">
+                  Unit Kerja Lapangan
+                </span>
+              </div>
+              <h1 className="text-2xl md:text-3xl font-black text-[#09090B]">
+                Halo, {user.name}
+              </h1>
+              <p className="text-xs md:text-sm text-[#52525B] mt-1 max-w-2xl">
+                Kelola tiket perbaikan yang ditugaskan ke Anda. Mulai pengerjaan di lokasi, lalu unggah foto bukti fisik beserta catatan tindakan teknis saat selesai.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => reloadData()}
+              disabled={isFetching}
+              className="px-4 py-2.5 text-xs font-extrabold uppercase border-2 border-[#09090B] bg-white hover:bg-[#F4F4F5] shadow-[2px_2px_0_0_#09090B] flex items-center gap-2 transition-transform active:translate-x-[2px] active:translate-y-[2px]"
+            >
+              <RotateCcw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin' : ''}`} />
+              <span>{isFetching ? 'Memuat...' : 'Segarkan Data'}</span>
+            </button>
           </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-[#09090B]">
-            Halo, {user.name}
-          </h1>
-          <p className="text-xs md:text-sm text-[#52525B] mt-1 max-w-2xl">
-            Di sini Anda dapat mengelola tugas penanganan fisik di kampus: mulai mengerjakan laporan, memperbarui status di lokasi, dan mengunggah foto bukti penyelesaian.
-          </p>
         </div>
 
-        {/* Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="border-2 border-[#09090B] bg-white p-5 shadow-[4px_4px_0_0_#09090B]">
-            <div className="w-9 h-9 border border-[#09090B] bg-[#BAE6FD] flex items-center justify-center mb-3">
-              <Wrench className="w-5 h-5 text-[#09090B]" strokeWidth={2.5} />
+        {/* Metric Overview Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
+          <button
+            type="button"
+            onClick={() => handleTabChange('assigned')}
+            className={`text-left border-2 border-[#09090B] p-4 transition-all ${
+              selectedTab === 'assigned'
+                ? 'bg-[#BAE6FD] shadow-[4px_4px_0_0_#09090B] -translate-y-1'
+                : 'bg-white shadow-[2px_2px_0_0_#09090B] hover:bg-[#F0F9FF]'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-extrabold uppercase text-[#09090B]">
+                Tugas Baru
+              </span>
+              <Wrench className="w-4 h-4 text-[#09090B]" />
             </div>
-            <div className="font-extrabold text-sm text-[#09090B]">
-              Tugas Baru
+            <div className="text-2xl md:text-3xl font-black text-[#09090B]">
+              {stats.assigned}
             </div>
-            <p className="text-xs text-[#52525B] mt-1">
-              Tiket kerusakan yang baru saja didisposisikan oleh Admin Sarpras ke Anda.
-            </p>
-          </div>
+            <div className="text-[11px] text-[#52525B] mt-1">Perlu dimulai</div>
+          </button>
 
-          <div className="border-2 border-[#09090B] bg-white p-5 shadow-[4px_4px_0_0_#09090B]">
-            <div className="w-9 h-9 border border-[#09090B] bg-[#FEF08A] flex items-center justify-center mb-3">
-              <Clock className="w-5 h-5 text-[#09090B]" strokeWidth={2.5} />
+          <button
+            type="button"
+            onClick={() => handleTabChange('in_progress')}
+            className={`text-left border-2 border-[#09090B] p-4 transition-all ${
+              selectedTab === 'in_progress'
+                ? 'bg-[#FED7AA] shadow-[4px_4px_0_0_#09090B] -translate-y-1'
+                : 'bg-white shadow-[2px_2px_0_0_#09090B] hover:bg-[#FFF7ED]'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-extrabold uppercase text-[#09090B]">
+                Dikerjakan
+              </span>
+              <Clock className="w-4 h-4 text-[#09090B]" />
             </div>
-            <div className="font-extrabold text-sm text-[#09090B]">
-              Dalam Pengerjaan
+            <div className="text-2xl md:text-3xl font-black text-[#09090B]">
+              {stats.inProgress}
             </div>
-            <p className="text-xs text-[#52525B] mt-1">
-              Pekerjaan yang saat ini sedang aktif diperbaiki oleh tim teknisi.
-            </p>
-          </div>
+            <div className="text-[11px] text-[#52525B] mt-1">Sedang aktif di lokasi</div>
+          </button>
 
-          <div className="border-2 border-[#09090B] bg-white p-5 shadow-[4px_4px_0_0_#09090B]">
-            <div className="w-9 h-9 border border-[#09090B] bg-[#C4B5FD] flex items-center justify-center mb-3">
-              <Camera className="w-5 h-5 text-[#09090B]" strokeWidth={2.5} />
+          <button
+            type="button"
+            onClick={() => handleTabChange('review')}
+            className={`text-left border-2 border-[#09090B] p-4 transition-all ${
+              selectedTab === 'review'
+                ? 'bg-[#E9D5FF] shadow-[4px_4px_0_0_#09090B] -translate-y-1'
+                : 'bg-white shadow-[2px_2px_0_0_#09090B] hover:bg-[#FAF5FF]'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-extrabold uppercase text-[#09090B]">
+                Menunggu Review
+              </span>
+              <Camera className="w-4 h-4 text-[#09090B]" />
             </div>
-            <div className="font-extrabold text-sm text-[#09090B]">
-              Upload Bukti
+            <div className="text-2xl md:text-3xl font-black text-[#09090B]">
+              {stats.review}
             </div>
-            <p className="text-xs text-[#52525B] mt-1">
-              Unggah foto hasil perbaikan fisik beserta catatan tindakan teknis.
-            </p>
-          </div>
+            <div className="text-[11px] text-[#52525B] mt-1">Verifikasi Sarpras</div>
+          </button>
 
-          <div className="border-2 border-[#09090B] bg-white p-5 shadow-[4px_4px_0_0_#09090B]">
-            <div className="w-9 h-9 border border-[#09090B] bg-[#D9F99D] flex items-center justify-center mb-3">
-              <CheckCircle className="w-5 h-5 text-[#09090B]" strokeWidth={2.5} />
+          <button
+            type="button"
+            onClick={() => handleTabChange('completed')}
+            className={`text-left border-2 border-[#09090B] p-4 transition-all ${
+              selectedTab === 'completed'
+                ? 'bg-[#D9F99D] shadow-[4px_4px_0_0_#09090B] -translate-y-1'
+                : 'bg-white shadow-[2px_2px_0_0_#09090B] hover:bg-[#F7FEE7]'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-extrabold uppercase text-[#09090B]">
+                Tuntas Selesai
+              </span>
+              <CheckCircle className="w-4 h-4 text-[#09090B]" />
             </div>
-            <div className="font-extrabold text-sm text-[#09090B]">
-              Riwayat Selesai
+            <div className="text-2xl md:text-3xl font-black text-[#09090B]">
+              {stats.completed}
             </div>
-            <p className="text-xs text-[#52525B] mt-1">
-              Daftar pekerjaan yang telah diverifikasi dan ditutup selesai oleh admin.
-            </p>
+            <div className="text-[11px] text-[#52525B] mt-1">Telah disetujui</div>
+          </button>
+        </div>
+
+        {/* Filter and Search Bar */}
+        <div className="border-2 border-[#09090B] bg-white p-4 shadow-[4px_4px_0_0_#09090B] mb-6 space-y-4">
+          <div className="flex flex-col md:flex-row gap-4 justify-between items-stretch md:items-center">
+            {/* Filter Tabs */}
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => handleTabChange('all')}
+                className={`px-3 py-1.5 text-xs font-extrabold uppercase border border-[#09090B] transition-all ${
+                  selectedTab === 'all'
+                    ? 'bg-[#09090B] text-white shadow-[2px_2px_0_0_#71717A]'
+                    : 'bg-white text-[#09090B] hover:bg-[#F4F4F5]'
+                }`}
+              >
+                Semua ({stats.total})
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTabChange('assigned')}
+                className={`px-3 py-1.5 text-xs font-extrabold uppercase border border-[#09090B] transition-all ${
+                  selectedTab === 'assigned'
+                    ? 'bg-[#BAE6FD] text-[#09090B] shadow-[2px_2px_0_0_#09090B]'
+                    : 'bg-white text-[#09090B] hover:bg-[#F4F4F5]'
+                }`}
+              >
+                Tugas Baru ({stats.assigned})
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTabChange('in_progress')}
+                className={`px-3 py-1.5 text-xs font-extrabold uppercase border border-[#09090B] transition-all ${
+                  selectedTab === 'in_progress'
+                    ? 'bg-[#FED7AA] text-[#09090B] shadow-[2px_2px_0_0_#09090B]'
+                    : 'bg-white text-[#09090B] hover:bg-[#F4F4F5]'
+                }`}
+              >
+                Sedang Dikerjakan ({stats.inProgress})
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTabChange('review')}
+                className={`px-3 py-1.5 text-xs font-extrabold uppercase border border-[#09090B] transition-all ${
+                  selectedTab === 'review'
+                    ? 'bg-[#E9D5FF] text-[#09090B] shadow-[2px_2px_0_0_#09090B]'
+                    : 'bg-white text-[#09090B] hover:bg-[#F4F4F5]'
+                }`}
+              >
+                Review ({stats.review})
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTabChange('completed')}
+                className={`px-3 py-1.5 text-xs font-extrabold uppercase border border-[#09090B] transition-all ${
+                  selectedTab === 'completed'
+                    ? 'bg-[#D9F99D] text-[#09090B] shadow-[2px_2px_0_0_#09090B]'
+                    : 'bg-white text-[#09090B] hover:bg-[#F4F4F5]'
+                }`}
+              >
+                Riwayat Selesai ({stats.completed})
+              </button>
+            </div>
+
+            {/* Search Input */}
+            <form onSubmit={handleSearchSubmit} className="flex gap-2 min-w-[280px]">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-[#71717A] absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Cari tiket, judul, lokasi..."
+                  className="w-full border-2 border-[#09090B] pl-9 pr-3 py-1.5 text-xs md:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#09090B]"
+                />
+              </div>
+              <button
+                type="submit"
+                className="px-3 py-1.5 text-xs font-extrabold uppercase border-2 border-[#09090B] bg-[#09090B] text-white hover:bg-[#27272A] transition-colors"
+              >
+                Cari
+              </button>
+            </form>
           </div>
         </div>
+
+        {/* Task Cards Grid */}
+        {tasks.length === 0 ? (
+          <div className="border-2 border-[#09090B] bg-white p-12 text-center shadow-[4px_4px_0_0_#09090B]">
+            <div className="w-12 h-12 mx-auto border-2 border-[#09090B] bg-[#FEF08A] flex items-center justify-center mb-4">
+              <AlertTriangle className="w-6 h-6 text-[#09090B]" />
+            </div>
+            <h3 className="text-base md:text-lg font-black text-[#09090B]">
+              Tidak Ada Tugas Ditemukan
+            </h3>
+            <p className="text-xs md:text-sm text-[#52525B] mt-1 max-w-md mx-auto">
+              {searchQuery || selectedTab !== 'all'
+                ? 'Tidak ada tiket yang sesuai dengan filter atau kata kunci pencarian Anda.'
+                : 'Saat ini belum ada tugas perbaikan fasilitas yang ditugaskan ke Anda oleh Admin Sarpras.'}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {tasks.map((task) => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                onStart={handleStartTask}
+                onOpenCompleteModal={handleOpenCompleteModal}
+                isStarting={startingTaskId === task.id}
+              />
+            ))}
+          </div>
+        )}
       </main>
 
-      <footer className="border-t-2 border-[#09090B] bg-[#FAF8F5] py-4 text-center text-xs font-mono text-[#52525B]">
-        Universitas Tadulako • Panel Teknisi Lapangan • WITA (UTC+8)
+      {/* Completion Modal */}
+      <CompletionModal
+        task={
+          completionTask
+            ? {
+                id: completionTask.id,
+                trackingCode: completionTask.trackingCode,
+                title: completionTask.title,
+                building: completionTask.building,
+                floor: completionTask.floor,
+                roomOrArea: completionTask.roomOrArea,
+                locationDetail: completionTask.locationDetail,
+              }
+            : null
+        }
+        isOpen={Boolean(completionTask)}
+        onClose={() => setCompletionTask(null)}
+        onSuccess={handleCompletionSuccess}
+      />
+
+      <footer className="border-t-2 border-[#09090B] bg-white py-4 text-center text-xs font-mono text-[#52525B] mt-12">
+        Universitas Tadulako • Panel Teknisi Lapangan • SIPRA-UNTAD
       </footer>
     </div>
   )

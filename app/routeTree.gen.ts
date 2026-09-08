@@ -19,6 +19,7 @@ import { Route as DashboardMonitorRouteImport } from './routes/dashboard/monitor
 import { Route as DashboardReporterRouteImport } from './routes/dashboard/reporter'
 import { Route as DashboardTechnicianRouteImport } from './routes/dashboard/technician'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as DashboardReporterNewRouteImport } from './routes/dashboard/reporter_.new'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -70,6 +71,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardReporterNewRoute = DashboardReporterNewRouteImport.update({
+  id: '/dashboard/reporter_/new',
+  path: '/dashboard/reporter/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/technician': typeof DashboardTechnicianRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/dashboard/reporter/new': typeof DashboardReporterNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/dashboard/technician': typeof DashboardTechnicianRoute
   '/dashboard': typeof DashboardIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/dashboard/reporter/new': typeof DashboardReporterNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/dashboard/technician': typeof DashboardTechnicianRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/dashboard/reporter_/new': typeof DashboardReporterNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/dashboard/technician'
     | '/dashboard/'
     | '/api/auth/$'
+    | '/dashboard/reporter/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/dashboard/technician'
     | '/dashboard'
     | '/api/auth/$'
+    | '/dashboard/reporter/new'
   id:
     | '__root__'
     | '/'
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/dashboard/technician'
     | '/dashboard/'
     | '/api/auth/$'
+    | '/dashboard/reporter_/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -158,6 +170,7 @@ export interface RootRouteChildren {
   DashboardTechnicianRoute: typeof DashboardTechnicianRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  DashboardReporterNewRoute: typeof DashboardReporterNewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/reporter_/new': {
+      id: '/dashboard/reporter_/new'
+      path: '/dashboard/reporter/new'
+      fullPath: '/dashboard/reporter/new'
+      preLoaderRoute: typeof DashboardReporterNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -246,6 +266,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardTechnicianRoute: DashboardTechnicianRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  DashboardReporterNewRoute: DashboardReporterNewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

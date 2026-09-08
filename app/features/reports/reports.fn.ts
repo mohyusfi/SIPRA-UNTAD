@@ -1,10 +1,12 @@
 import { createServerFn } from '@tanstack/react-start'
+import { getRequestHeaders } from '@tanstack/react-start-server'
 import { z } from 'zod'
 import { eq, desc } from 'drizzle-orm'
 import { db } from '~/db'
 import { categories, locations, reports, reportPhotos, reportTimeline } from '~/db/schema'
 import { supabase } from '~/lib/supabase'
 import { generateTrackingCode } from '~/lib/utils'
+import { auth } from '~/lib/auth'
 
 const rateLimitMap = new Map<string, number[]>()
 
@@ -116,8 +118,30 @@ export const submitReport = createServerFn({ method: 'POST' })
       }
     }
 
+    let sessionUser: { id: string; name: string; email: string } | null = null
+    try {
+      const headers = getRequestHeaders()
+      const session = await auth.api.getSession({
+        headers: headers as any,
+      })
+      if (session?.user) {
+        sessionUser = session.user as any
+      }
+    } catch {
+      sessionUser = null
+    }
+
     const trackingCode = generateTrackingCode()
     const reportId = crypto.randomUUID()
+
+    const reporterId = sessionUser ? sessionUser.id : null
+    let reporterName: string | null = null
+    let reporterEmail: string | null = null
+
+    if (!data.isAnonymous) {
+      reporterName = sessionUser ? sessionUser.name : (data.reporterName || null)
+      reporterEmail = sessionUser ? sessionUser.email : (data.reporterEmail || null)
+    }
 
     await db.insert(reports).values({
       id: reportId,
@@ -131,8 +155,9 @@ export const submitReport = createServerFn({ method: 'POST' })
       urgency: data.urgency,
       status: 'submitted',
       isAnonymous: data.isAnonymous,
-      reporterName: data.isAnonymous ? null : data.reporterName || null,
-      reporterEmail: data.isAnonymous ? null : data.reporterEmail || null,
+      reporterId,
+      reporterName,
+      reporterEmail,
     })
 
     for (let i = 0; i < data.photos.length; i++) {
@@ -247,3 +272,124 @@ export const getReportByTrackingCode = createServerFn({ method: 'GET' })
       })),
     }
   })
+
+export const getReporterDashboardData = createServerFn({ method: 'GET' }).handler(
+  async () => {
+    let sessionUser: { id: string; name: string; email: string; role: string } | null = null
+    try {
+      const headers = getRequestHeaders()
+      const session = await auth.api.getSession({
+        headers: headers as any,
+      })
+      if (session?.user) {
+        sessionUser = session.user as any
+      }
+    } catch {
+      sessionUser = null
+    }
+
+    if (!sessionUser) {
+      throw new Error('Sesi tidak valid. Silakan login terlebih dahulu.')
+    }
+
+    const userReports = await db.query.reports.findMany({
+      where: eq(reports.reporterId, sessionUser.id),
+      orderBy: [desc(reports.createdAt)],
+      with: {
+        category: true,
+        location: true,
+        photos: true,
+        timeline: {
+          orderBy: [desc(reportTimeline.createdAt)],
+        },
+      },
+    })
+
+    let pendingCount = 0
+    let inProgressCount = 0
+    let completedCount = 0
+    let otherCount = 0
+
+    for (const r of userReports) {
+      if (r.status === 'submitted' || r.status === 'verified') {
+        pendingCount++
+      } else if (
+        r.status === 'assigned' ||
+        r.status === 'in_progress' ||
+        r.status === 'review'
+      ) {
+        inProgressCount++
+      } else if (r.status === 'completed') {
+        completedCount++
+      } else {
+        otherCount++
+      }
+    }
+
+    const formattedReports = await Promise.all(
+      userReports.map(async (r) => {
+        const photosWithUrls = await Promise.all(
+          r.photos.map(async (p) => {
+            const { data: signed } = await supabase.storage
+              .from('report-attachments')
+              .createSignedUrl(p.fileKey, 3600)
+
+            return {
+              id: p.id,
+              photoType: p.photoType,
+              fileKey: p.fileKey,
+              url: signed?.signedUrl || '',
+              createdAt: p.createdAt,
+            }
+          }),
+        )
+
+        return {
+          id: r.id,
+          trackingCode: r.trackingCode,
+          title: r.title,
+          descriptionText: r.descriptionText,
+          descriptionJson: r.descriptionJson,
+          urgency: r.urgency,
+          status: r.status,
+          isAnonymous: r.isAnonymous,
+          createdAt: r.createdAt,
+          updatedAt: r.updatedAt,
+          locationDetail: r.locationDetail,
+          category: r.category
+            ? { id: r.category.id, name: r.category.name }
+            : null,
+          location: r.location
+            ? {
+                id: r.location.id,
+                campus: r.location.campus,
+                building: r.location.building,
+                floor: r.location.floor,
+                roomOrArea: r.location.roomOrArea,
+              }
+            : null,
+          photos: photosWithUrls,
+          timeline: r.timeline.map((t) => ({
+            id: t.id,
+            action: t.action,
+            fromStatus: t.fromStatus,
+            toStatus: t.toStatus,
+            notes: t.notes,
+            createdAt: t.createdAt,
+          })),
+        }
+      }),
+    )
+
+    return {
+      stats: {
+        total: userReports.length,
+        pending: pendingCount,
+        inProgress: inProgressCount,
+        completed: completedCount,
+        other: otherCount,
+      },
+      reports: formattedReports,
+    }
+  },
+)

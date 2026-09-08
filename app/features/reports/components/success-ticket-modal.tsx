@@ -1,7 +1,8 @@
 import * as React from 'react'
 import { Link } from '@tanstack/react-router'
-import { Ticket, Copy, Check, ArrowUpRight, X } from 'lucide-react'
+import { Ticket, Copy, Check, ArrowUpRight, X, LayoutDashboard } from 'lucide-react'
 import { Button } from '~/components/ui/button'
+import { authClient } from '~/lib/auth-client'
 
 interface SuccessTicketModalProps {
   isOpen: boolean
@@ -15,6 +16,8 @@ export function SuccessTicketModal({
   onClose,
 }: SuccessTicketModalProps) {
   const [copied, setCopied] = React.useState(false)
+  const { data: session } = authClient.useSession()
+  const user = session?.user
 
   if (!isOpen) return null
 
@@ -93,16 +96,41 @@ export function SuccessTicketModal({
         </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-3">
-          <Link
-            to="/track"
-            search={{ code: trackingCode }}
-            className="w-full sm:flex-1"
-          >
-            <Button variant="lime" className="w-full">
-              <span>Buka Halaman Pelacakan</span>
-              <ArrowUpRight className="w-4 h-4" strokeWidth={2.5} />
-            </Button>
-          </Link>
+          {user ? (
+            <Link
+              to="/dashboard/reporter"
+              className="w-full sm:flex-1"
+            >
+              <Button variant="lime" className="w-full">
+                <LayoutDashboard className="w-4 h-4 text-[#09090B]" strokeWidth={2.5} />
+                <span>Buka Dashboard Pelapor</span>
+              </Button>
+            </Link>
+          ) : (
+            <Link
+              to="/track"
+              search={{ code: trackingCode }}
+              className="w-full sm:flex-1"
+            >
+              <Button variant="lime" className="w-full">
+                <span>Buka Halaman Pelacakan</span>
+                <ArrowUpRight className="w-4 h-4" strokeWidth={2.5} />
+              </Button>
+            </Link>
+          )}
+
+          {user && (
+            <Link
+              to="/track"
+              search={{ code: trackingCode }}
+              className="w-full sm:w-auto"
+            >
+              <Button variant="secondary" className="w-full">
+                <span>Lacak Publik</span>
+              </Button>
+            </Link>
+          )}
+
           <Button
             variant="secondary"
             onClick={onClose}

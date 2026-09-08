@@ -3,6 +3,7 @@ import {
   AlertTriangle,
   Info,
   Shield,
+  ShieldCheck,
   User,
   Mail,
   Send,
@@ -19,6 +20,7 @@ import {
 import { SuccessTicketModal } from './success-ticket-modal'
 import { submitReport } from '../reports.fn'
 import { cn } from '~/lib/utils'
+import { authClient } from '~/lib/auth-client'
 
 interface CategoryItem {
   id: string
@@ -47,6 +49,9 @@ export function ReportForm({ categories, locations }: ReportFormProps) {
   const [reporterName, setReporterName] = React.useState('')
   const [reporterEmail, setReporterEmail] = React.useState('')
   const [honeypot, setHoneypot] = React.useState('')
+
+  const { data: session } = authClient.useSession()
+  const currentUser = session?.user
 
   const [loading, setLoading] = React.useState(false)
   const [formError, setFormError] = React.useState<string | null>(null)
@@ -83,7 +88,7 @@ export function ReportForm({ categories, locations }: ReportFormProps) {
       errors.photos = 'Wajib melampirkan minimal 1 foto bukti kerusakan'
     }
 
-    if (!isAnonymous) {
+    if (!isAnonymous && !currentUser) {
       if (!reporterName.trim()) {
         errors.reporterName = 'Nama pelapor wajib diisi (atau centang Lapor Anonim)'
       }
@@ -114,8 +119,16 @@ export function ReportForm({ categories, locations }: ReportFormProps) {
           locationDetail: locationDetail.trim(),
           urgency,
           isAnonymous,
-          reporterName: isAnonymous ? undefined : reporterName.trim(),
-          reporterEmail: isAnonymous ? undefined : reporterEmail.trim(),
+          reporterName: isAnonymous
+            ? undefined
+            : currentUser
+              ? currentUser.name
+              : reporterName.trim(),
+          reporterEmail: isAnonymous
+            ? undefined
+            : currentUser
+              ? currentUser.email
+              : reporterEmail.trim(),
           photos,
         },
       })
@@ -162,14 +175,20 @@ export function ReportForm({ categories, locations }: ReportFormProps) {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 border-2 border-[#09090B] bg-white flex items-center justify-center shadow-[1px_1px_0_0_#09090B]">
-                <Shield className="w-4 h-4 text-[#09090B]" strokeWidth={2.5} />
+                {currentUser ? (
+                  <ShieldCheck className="w-4 h-4 text-[#09090B]" strokeWidth={2.5} />
+                ) : (
+                  <Shield className="w-4 h-4 text-[#09090B]" strokeWidth={2.5} />
+                )}
               </div>
               <div>
                 <h4 className="text-sm font-extrabold text-[#09090B]">
-                  Pilihan Privasi Pelapor
+                  {currentUser ? 'Identitas Pelapor Sivitas' : 'Pilihan Privasi Pelapor'}
                 </h4>
                 <p className="text-xs text-[#52525B]">
-                  Laporkan secara terbuka atau gunakan proteksi anonim.
+                  {currentUser
+                    ? 'Akun Anda terhubung otomatis. Anda juga dapat memilih opsi anonim.'
+                    : 'Laporkan secara terbuka atau gunakan proteksi anonim.'}
                 </p>
               </div>
             </div>
@@ -191,10 +210,44 @@ export function ReportForm({ categories, locations }: ReportFormProps) {
             <div className="mt-3 p-2.5 bg-[#FEF08A] border-2 border-[#09090B] text-xs text-[#09090B] font-medium flex items-center gap-2">
               <Info className="w-4 h-4 shrink-0 text-[#09090B]" strokeWidth={2.5} />
               <span>
-                Identitas Anda dirahasiakan total. Perkembangan penanganan hanya
-                dapat dipantau menggunakan <strong>Kode Lacak</strong> yang
-                diberikan setelah pengiriman.
+                {currentUser ? (
+                  <>
+                    <strong>Mode Anonim Aktif:</strong> Identitas nama & email Anda disembunyikan dari admin, teknisi, dan publik. Namun laporan ini <strong>tetap tersimpan di dashboard pribadi Anda</strong>.
+                  </>
+                ) : (
+                  <>
+                    Identitas Anda dirahasiakan total. Perkembangan penanganan hanya
+                    dapat dipantau menggunakan <strong>Kode Lacak</strong> yang
+                    diberikan setelah pengiriman.
+                  </>
+                )}
               </span>
+            </div>
+          ) : currentUser ? (
+            <div className="mt-4 pt-3 border-t-2 border-[#09090B]/20">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border-2 border-[#09090B] p-3.5 shadow-[2px_2px_0_0_#09090B]">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 border-2 border-[#09090B] bg-[#C4B5FD] flex items-center justify-center shrink-0 shadow-[1px_1px_0_0_#09090B]">
+                    <User className="w-5 h-5 text-[#09090B]" strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-extrabold text-sm text-[#09090B]">
+                        {currentUser.name}
+                      </span>
+                      <span className="px-2 py-0.5 text-[9px] font-extrabold uppercase border border-[#09090B] bg-[#D9F99D]">
+                        Sivitas Terverifikasi
+                      </span>
+                    </div>
+                    <div className="text-xs text-[#52525B] font-mono mt-0.5">
+                      {currentUser.email}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-[10px] font-mono font-bold uppercase px-2.5 py-1 bg-[#FAF8F5] border border-[#09090B] text-[#52525B] self-start sm:self-auto">
+                  Profil Login Aktif
+                </div>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 pt-3 border-t-2 border-[#09090B]/20">
