@@ -3,13 +3,13 @@ import { z } from 'zod'
 import { eq, ne, desc, and, or, ilike, count } from 'drizzle-orm'
 import { db } from '~/db'
 import { reports, reportTimeline, user, categories, locations, account } from '~/db/schema'
-import { getCurrentUserSession } from '~/lib/auth-server'
+import { getSessionFromServer } from '~/lib/auth-session.server'
 import { getBatchSignedUrls } from '~/lib/supabase'
 import { auth } from '~/lib/auth'
 import { hashPassword } from 'better-auth/crypto'
 
 async function requireAdminSession() {
-  const session = await getCurrentUserSession()
+  const session = await getSessionFromServer()
   if (!session?.user) {
     throw new Error('Sesi tidak ditemukan. Silakan login kembali.')
   }

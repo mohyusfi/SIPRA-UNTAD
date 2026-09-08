@@ -3,11 +3,11 @@ import { z } from 'zod'
 import { eq, desc } from 'drizzle-orm'
 import { db } from '~/db'
 import { reports, reportPhotos, reportTimeline } from '~/db/schema'
-import { getCurrentUserSession } from '~/lib/auth-server'
+import { getSessionFromServer } from '~/lib/auth-session.server'
 import { supabase, getBatchSignedUrls } from '~/lib/supabase'
 
 async function requireTechnicianSession() {
-  const session = await getCurrentUserSession()
+  const session = await getSessionFromServer()
   if (!session?.user) {
     throw new Error('Sesi tidak ditemukan. Silakan login kembali.')
   }

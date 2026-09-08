@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { desc, gte } from 'drizzle-orm'
 import { db } from '~/db'
 import { reports, reportTimeline } from '~/db/schema'
-import { getCurrentUserSession } from '~/lib/auth-server'
+import { getSessionFromServer } from '~/lib/auth-session.server'
 import { getBatchSignedUrls } from '~/lib/supabase'
 
 export type TimeRangeOption = '7d' | '30d' | 'semester' | 'all'
@@ -89,7 +89,7 @@ const monitorQuerySchema = z.object({
 export const getMonitorDashboardData = createServerFn({ method: 'GET' })
   .validator((data: unknown) => monitorQuerySchema.parse(data || {}))
   .handler(async ({ data }) => {
-    const session = await getCurrentUserSession()
+    const session = await getSessionFromServer()
     if (!session?.user) {
       throw new Error('Sesi tidak ditemukan. Silakan login terlebih dahulu.')
     }

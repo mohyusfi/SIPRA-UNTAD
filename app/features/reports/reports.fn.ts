@@ -5,7 +5,7 @@ import { db } from '~/db'
 import { categories, locations, reports, reportPhotos, reportTimeline } from '~/db/schema'
 import { supabase, getBatchSignedUrls } from '~/lib/supabase'
 import { generateTrackingCode } from '~/lib/utils'
-import { getCurrentUserSession } from '~/lib/auth-server'
+import { getSessionFromServer } from '~/lib/auth-session.server'
 
 const rateLimitMap = new Map<string, number[]>()
 
@@ -117,7 +117,7 @@ export const submitReport = createServerFn({ method: 'POST' })
       }
     }
 
-    const session = await getCurrentUserSession()
+    const session = await getSessionFromServer()
     const sessionUser = session?.user || null
 
     const trackingCode = generateTrackingCode()
@@ -268,7 +268,7 @@ const getReporterDashboardSchema = z
 export const getReporterDashboardData = createServerFn({ method: 'GET' })
   .validator((data: unknown) => getReporterDashboardSchema.parse(data || {}))
   .handler(async ({ data }) => {
-    const session = await getCurrentUserSession()
+    const session = await getSessionFromServer()
     if (!session?.user) {
       throw new Error('Sesi tidak valid. Silakan login terlebih dahulu.')
     }
