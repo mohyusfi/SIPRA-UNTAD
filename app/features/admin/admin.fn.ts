@@ -27,103 +27,154 @@ const getReportsInputSchema = z.object({
   limit: z.number().default(10).optional(),
 })
 
+async function fetchAdminReportsData(data: z.infer<typeof getReportsInputSchema>) {
+  const conditions = []
+
+  if (data.status && data.status !== 'all') {
+    conditions.push(eq(reports.status, data.status))
+  }
+
+  if (data.search && data.search.trim()) {
+    const q = `%${data.search.trim()}%`
+    conditions.push(
+      or(
+        ilike(reports.title, q),
+        ilike(reports.trackingCode, q),
+        ilike(reports.locationDetail, q),
+      ),
+    )
+  }
+
+  const whereClause = conditions.length > 0 ? and(...conditions) : undefined
+
+  const [{ totalCount: totalMatchingCount }] = await db
+    .select({ totalCount: count() })
+    .from(reports)
+    .where(whereClause)
+
+  const totalMatching = Number(totalMatchingCount)
+  const page = Math.max(1, data.page || 1)
+  const limit = Math.max(1, data.limit || 10)
+  const totalPages = Math.max(1, Math.ceil(totalMatching / limit))
+  const offset = (page - 1) * limit
+
+  const reportList = await db.query.reports.findMany({
+    where: whereClause,
+    limit,
+    offset,
+    with: {
+      category: true,
+      location: true,
+      reporter: true,
+      assignedTechnician: true,
+      photos: true,
+    },
+    orderBy: [desc(reports.createdAt)],
+  })
+
+  const allReportsForStats = await db
+    .select({
+      status: reports.status,
+    })
+    .from(reports)
+
+  const stats = {
+    total: allReportsForStats.length,
+    submitted: allReportsForStats.filter((r) => r.status === 'submitted').length,
+    verified: allReportsForStats.filter((r) => r.status === 'verified').length,
+    assigned: allReportsForStats.filter((r) => r.status === 'assigned').length,
+    inProgress: allReportsForStats.filter((r) => r.status === 'in_progress').length,
+    review: allReportsForStats.filter((r) => r.status === 'review').length,
+    completed: allReportsForStats.filter((r) => r.status === 'completed').length,
+    rejected: allReportsForStats.filter((r) => r.status === 'rejected').length,
+    duplicate: allReportsForStats.filter((r) => r.status === 'duplicate').length,
+  }
+
+  return {
+    reports: reportList.map((r) => ({
+      id: r.id,
+      trackingCode: r.trackingCode,
+      title: r.title,
+      descriptionText: r.descriptionText,
+      urgency: r.urgency,
+      status: r.status,
+      isAnonymous: r.isAnonymous,
+      createdAt: r.createdAt,
+      updatedAt: r.updatedAt,
+      locationDetail: r.locationDetail,
+      categoryName: r.category?.name || 'Tanpa Kategori',
+      building: r.location?.building || 'Area Kampus',
+      floor: r.location?.floor || '',
+      roomOrArea: r.location?.roomOrArea || '',
+      reporterName: r.isAnonymous
+        ? 'Anonim'
+        : r.reporter?.name || r.reporterName || 'Sivitas',
+      reporterEmail: r.isAnonymous ? null : r.reporter?.email || r.reporterEmail,
+      assignedTechnicianName: r.assignedTechnician?.name || null,
+      photoCount: r.photos.length,
+    })),
+    stats,
+    pagination: {
+      page,
+      limit,
+      totalCount: totalMatching,
+      totalPages,
+    },
+  }
+}
+
 export const getAdminReports = createServerFn({ method: 'GET' })
   .validator((data: unknown) => getReportsInputSchema.parse(data || {}))
   .handler(async ({ data }) => {
     await requireAdminSession()
+    return fetchAdminReportsData(data)
+  })
 
-    const conditions = []
+export const getAdminInitialData = createServerFn({ method: 'GET' })
+  .validator((data: unknown) => getReportsInputSchema.parse(data || {}))
+  .handler(async ({ data }) => {
+    await requireAdminSession()
 
-    if (data.status && data.status !== 'all') {
-      conditions.push(eq(reports.status, data.status))
-    }
-
-    if (data.search && data.search.trim()) {
-      const q = `%${data.search.trim()}%`
-      conditions.push(
-        or(
-          ilike(reports.title, q),
-          ilike(reports.trackingCode, q),
-          ilike(reports.locationDetail, q),
-        ),
-      )
-    }
-
-    const whereClause = conditions.length > 0 ? and(...conditions) : undefined
-
-    const [{ totalCount: totalMatchingCount }] = await db
-      .select({ totalCount: count() })
-      .from(reports)
-      .where(whereClause)
-
-    const totalMatching = Number(totalMatchingCount)
-    const page = Math.max(1, data.page || 1)
-    const limit = Math.max(1, data.limit || 10)
-    const totalPages = Math.max(1, Math.ceil(totalMatching / limit))
-    const offset = (page - 1) * limit
-
-    const reportList = await db.query.reports.findMany({
-      where: whereClause,
-      limit,
-      offset,
-      with: {
-        category: true,
-        location: true,
-        reporter: true,
-        assignedTechnician: true,
-        photos: true,
-      },
-      orderBy: [desc(reports.createdAt)],
-    })
-
-    const allReportsForStats = await db
-      .select({
-        status: reports.status,
-      })
-      .from(reports)
-
-    const stats = {
-      total: allReportsForStats.length,
-      submitted: allReportsForStats.filter((r) => r.status === 'submitted').length,
-      verified: allReportsForStats.filter((r) => r.status === 'verified').length,
-      assigned: allReportsForStats.filter((r) => r.status === 'assigned').length,
-      inProgress: allReportsForStats.filter((r) => r.status === 'in_progress').length,
-      review: allReportsForStats.filter((r) => r.status === 'review').length,
-      completed: allReportsForStats.filter((r) => r.status === 'completed').length,
-      rejected: allReportsForStats.filter((r) => r.status === 'rejected').length,
-      duplicate: allReportsForStats.filter((r) => r.status === 'duplicate').length,
-    }
+    const [reportsData, technicians, categoriesList, locationsList, staffList] =
+      await Promise.all([
+        fetchAdminReportsData(data),
+        db
+          .select({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+          })
+          .from(user)
+          .where(eq(user.role, 'technician')),
+        db.query.categories.findMany({
+          orderBy: [desc(categories.createdAt)],
+        }),
+        db.query.locations.findMany({
+          orderBy: [desc(locations.createdAt)],
+        }),
+        db.query.user.findMany({
+          where: or(
+            eq(user.role, 'admin'),
+            eq(user.role, 'technician'),
+            eq(user.role, 'monitor'),
+          ),
+          orderBy: [desc(user.createdAt)],
+        }),
+      ])
 
     return {
-      reports: reportList.map((r) => ({
-        id: r.id,
-        trackingCode: r.trackingCode,
-        title: r.title,
-        descriptionText: r.descriptionText,
-        urgency: r.urgency,
-        status: r.status,
-        isAnonymous: r.isAnonymous,
-        createdAt: r.createdAt,
-        updatedAt: r.updatedAt,
-        locationDetail: r.locationDetail,
-        categoryName: r.category?.name || 'Tanpa Kategori',
-        building: r.location?.building || 'Area Kampus',
-        floor: r.location?.floor || '',
-        roomOrArea: r.location?.roomOrArea || '',
-        reporterName: r.isAnonymous
-          ? 'Anonim'
-          : r.reporter?.name || r.reporterName || 'Sivitas',
-        reporterEmail: r.isAnonymous ? null : r.reporter?.email || r.reporterEmail,
-        assignedTechnicianName: r.assignedTechnician?.name || null,
-        photoCount: r.photos.length,
+      reportsData,
+      technicians,
+      categories: categoriesList,
+      locations: locationsList,
+      staff: staffList.map((u) => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        role: u.role,
+        createdAt: u.createdAt,
+        image: u.image,
       })),
-      stats,
-      pagination: {
-        page,
-        limit,
-        totalCount: totalMatching,
-        totalPages,
-      },
     }
   })
 

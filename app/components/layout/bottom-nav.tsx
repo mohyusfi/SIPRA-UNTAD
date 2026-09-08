@@ -41,15 +41,15 @@ export function BottomNav() {
   const isDashboard = pathname.startsWith('/dashboard')
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FAF8F5] border-t-2 border-[#09090B] shadow-[0_-2px_0_0_#09090B] px-3 py-2">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-canvas-surface border-t-2 border-ink-primary shadow-[0_-2px_0_0_#09090B] px-3 py-2">
       <div className="flex items-center justify-around max-w-md mx-auto">
         <Link
           to="/"
           preload="intent"
           className={cn(
-            'flex flex-col items-center justify-center py-1 px-3 border-2 border-transparent transition-all cursor-pointer min-w-[60px]',
+            'flex flex-col items-center justify-center py-1 px-3 border-2 border-transparent transition-all cursor-pointer min-w-15',
             isHome
-              ? 'border-[#09090B] bg-[#C4B5FD] shadow-[2px_2px_0_0_#09090B]'
+              ? 'border-ink-primary bg-brand-lilac shadow-[2px_2px_0_0_#09090B]'
               : 'hover:bg-neutral-100 text-[#52525B]',
           )}
         >
@@ -65,7 +65,7 @@ export function BottomNav() {
           className="flex flex-col items-center justify-center py-1 px-3 border-2 border-[#09090B] bg-[#D9F99D] shadow-[2px_2px_0_0_#09090B] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all cursor-pointer min-w-[60px] touch-manipulation select-none"
         >
           <PlusCircle className="w-5 h-5 text-[#09090B]" strokeWidth={2.5} />
-          <span className="text-[10px] font-extrabold uppercase tracking-tight text-[#09090B] mt-0.5">
+          <span className="text-[10px] font-extrabold uppercase tracking-tight text-ink-primary mt-0.5">
             Lapor
           </span>
         </button>
@@ -110,10 +110,10 @@ export function BottomNav() {
               'flex flex-col items-center justify-center py-1 px-3 border-2 border-transparent transition-all cursor-pointer min-w-[60px]',
               isLogin
                 ? 'border-[#09090B] bg-[#C4B5FD] shadow-[2px_2px_0_0_#09090B]'
-                : 'hover:bg-neutral-100 text-[#52525B]',
+                : 'hover:bg-neutral-100 text-ink-muted',
             )}
           >
-            <LogIn className="w-5 h-5 text-[#09090B]" strokeWidth={2.5} />
+            <LogIn className="w-5 h-5 text-ink-primary" strokeWidth={2.5} />
             <span className="text-[10px] font-extrabold uppercase tracking-tight text-[#09090B] mt-0.5">
               Masuk
             </span>

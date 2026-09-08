@@ -21,6 +21,7 @@ import { Button } from '~/components/ui/button'
 import { Pagination } from '~/components/ui/pagination'
 import { formatDate } from '~/lib/utils'
 import {
+  getAdminInitialData,
   getAdminReports,
   getAdminReportDetail,
   getAvailableTechnicians,
@@ -71,24 +72,19 @@ export const Route = createFileRoute('/dashboard/admin')({
     return { user: session.user }
   },
   loader: async ({ context }: { context: { user: any } }) => {
-    const [reportsData, technicians, categories, locations, staff] =
-      await Promise.all([
-        getAdminReports({ data: { status: 'all', search: '', page: 1, limit: 10 } }),
-        getAvailableTechnicians(),
-        getAdminCategories(),
-        getAdminLocations(),
-        getAdminStaffUsers(),
-      ])
+    const initialData = await getAdminInitialData({
+      data: { status: 'all', search: '', page: 1, limit: 10 },
+    })
 
     return {
       user: context.user,
-      initialReports: reportsData.reports,
-      initialStats: reportsData.stats,
-      initialPagination: reportsData.pagination,
-      technicians,
-      initialCategories: categories,
-      initialLocations: locations,
-      initialStaff: staff,
+      initialReports: initialData.reportsData.reports,
+      initialStats: initialData.reportsData.stats,
+      initialPagination: initialData.reportsData.pagination,
+      technicians: initialData.technicians,
+      initialCategories: initialData.categories,
+      initialLocations: initialData.locations,
+      initialStaff: initialData.staff,
     }
   },
   component: AdminDashboardPage,
