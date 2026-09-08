@@ -258,8 +258,16 @@ export const getReportByTrackingCode = createServerFn({ method: 'GET' })
     }
   })
 
-export const getReporterDashboardData = createServerFn({ method: 'GET' }).handler(
-  async () => {
+const getReporterDashboardSchema = z
+  .object({
+    page: z.number().default(1).optional(),
+    limit: z.number().default(6).optional(),
+  })
+  .optional()
+
+export const getReporterDashboardData = createServerFn({ method: 'GET' })
+  .validator((data: unknown) => getReporterDashboardSchema.parse(data || {}))
+  .handler(async ({ data }) => {
     const session = await getCurrentUserSession()
     if (!session?.user) {
       throw new Error('Sesi tidak valid. Silakan login terlebih dahulu.')
@@ -300,10 +308,18 @@ export const getReporterDashboardData = createServerFn({ method: 'GET' }).handle
       }
     }
 
-    const allFileKeys = userReports.flatMap((r) => r.photos.map((p) => p.fileKey))
+    const page = Math.max(1, data?.page || 1)
+    const limit = Math.max(1, data?.limit || 6)
+    const totalCount = userReports.length
+    const offset = (page - 1) * limit
+    const paginatedSlice = userReports.slice(offset, offset + limit)
+    const hasMore = offset + limit < totalCount
+
+    // Sign URLs only for the current batch
+    const allFileKeys = paginatedSlice.flatMap((r) => r.photos.map((p) => p.fileKey))
     const signedUrlsMap = await getBatchSignedUrls(allFileKeys)
 
-    const formattedReports = userReports.map((r) => {
+    const formattedReports = paginatedSlice.map((r) => {
       const photosWithUrls = r.photos.map((p) => ({
         id: p.id,
         photoType: p.photoType,
@@ -357,6 +373,11 @@ export const getReporterDashboardData = createServerFn({ method: 'GET' }).handle
         other: otherCount,
       },
       reports: formattedReports,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        hasMore,
+      },
     }
-  },
-)
+  })

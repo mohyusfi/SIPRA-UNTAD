@@ -9,6 +9,7 @@ import {
   Calendar,
 } from 'lucide-react'
 import { Button } from '~/components/ui/button'
+import { Pagination } from '~/components/ui/pagination'
 import { formatDate } from '~/lib/utils'
 import {
   ReportStatusBadge,
@@ -53,6 +54,12 @@ export function MonitorReportsTable({
   const [searchQuery, setSearchQuery] = React.useState('')
   const [selectedStatus, setSelectedStatus] = React.useState('all')
   const [selectedUrgency, setSelectedUrgency] = React.useState('all')
+  const [currentPage, setCurrentPage] = React.useState(1)
+  const [pageSize, setPageSize] = React.useState(10)
+
+  React.useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, selectedStatus, selectedUrgency])
 
   const filteredReports = React.useMemo(() => {
     return reports.filter((item) => {
@@ -80,6 +87,13 @@ export function MonitorReportsTable({
       return true
     })
   }, [reports, selectedStatus, selectedUrgency, searchQuery])
+
+  const totalCount = filteredReports.length
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
+  const paginatedReports = React.useMemo(() => {
+    const start = (currentPage - 1) * pageSize
+    return filteredReports.slice(start, start + pageSize)
+  }, [filteredReports, currentPage, pageSize])
 
   const handleExportCsv = () => {
     if (filteredReports.length === 0) return
@@ -280,7 +294,7 @@ export function MonitorReportsTable({
                 </td>
               </tr>
             ) : (
-              filteredReports.map((item) => (
+              paginatedReports.map((item) => (
                 <tr
                   key={item.id}
                   className="hover:bg-[#FAF8F5] transition-colors group"
@@ -357,6 +371,21 @@ export function MonitorReportsTable({
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {totalCount > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(newSize) => {
+            setPageSize(newSize)
+            setCurrentPage(1)
+          }}
+        />
+      )}
     </div>
   )
 }

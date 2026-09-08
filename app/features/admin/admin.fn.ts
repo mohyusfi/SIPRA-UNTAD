@@ -1,10 +1,12 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
-import { eq, desc, and, or, ilike } from 'drizzle-orm'
+import { eq, ne, desc, and, or, ilike, count } from 'drizzle-orm'
 import { db } from '~/db'
-import { reports, reportTimeline, user } from '~/db/schema'
+import { reports, reportTimeline, user, categories, locations, account } from '~/db/schema'
 import { getCurrentUserSession } from '~/lib/auth-server'
 import { getBatchSignedUrls } from '~/lib/supabase'
+import { auth } from '~/lib/auth'
+import { hashPassword } from 'better-auth/crypto'
 
 async function requireAdminSession() {
   const session = await getCurrentUserSession()
@@ -21,10 +23,12 @@ async function requireAdminSession() {
 const getReportsInputSchema = z.object({
   status: z.string().optional(),
   search: z.string().optional(),
+  page: z.number().default(1).optional(),
+  limit: z.number().default(10).optional(),
 })
 
 export const getAdminReports = createServerFn({ method: 'GET' })
-  .validator((data: unknown) => getReportsInputSchema.parse(data))
+  .validator((data: unknown) => getReportsInputSchema.parse(data || {}))
   .handler(async ({ data }) => {
     await requireAdminSession()
 
@@ -47,8 +51,21 @@ export const getAdminReports = createServerFn({ method: 'GET' })
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined
 
+    const [{ totalCount: totalMatchingCount }] = await db
+      .select({ totalCount: count() })
+      .from(reports)
+      .where(whereClause)
+
+    const totalMatching = Number(totalMatchingCount)
+    const page = Math.max(1, data.page || 1)
+    const limit = Math.max(1, data.limit || 10)
+    const totalPages = Math.max(1, Math.ceil(totalMatching / limit))
+    const offset = (page - 1) * limit
+
     const reportList = await db.query.reports.findMany({
       where: whereClause,
+      limit,
+      offset,
       with: {
         category: true,
         location: true,
@@ -101,6 +118,12 @@ export const getAdminReports = createServerFn({ method: 'GET' })
         photoCount: r.photos.length,
       })),
       stats,
+      pagination: {
+        page,
+        limit,
+        totalCount: totalMatching,
+        totalPages,
+      },
     }
   })
 
@@ -445,3 +468,406 @@ export const reviewCompletionAction = createServerFn({ method: 'POST' })
 
     return { success: true }
   })
+
+// ==========================================
+// 1. MASTER DATA: KATEGORI SARANA
+// ==========================================
+
+export const getAdminCategories = createServerFn({ method: 'GET' })
+  .handler(async () => {
+    await requireAdminSession()
+    return db.query.categories.findMany({
+      orderBy: [desc(categories.createdAt)],
+    })
+  })
+
+const createCategorySchema = z.object({
+  name: z.string().min(2, 'Nama kategori minimal 2 karakter').max(100),
+})
+
+export const createCategoryAction = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => createCategorySchema.parse(data))
+  .handler(async ({ data }) => {
+    await requireAdminSession()
+    const trimmedName = data.name.trim()
+
+    // 1. Pengecekan duplikasi case-insensitive
+    const [existing] = await db
+      .select({
+        id: categories.id,
+        name: categories.name,
+        isArchived: categories.isArchived,
+      })
+      .from(categories)
+      .where(ilike(categories.name, trimmedName))
+
+    if (existing) {
+      if (existing.isArchived) {
+        throw new Error(
+          `Kategori "${existing.name}" sudah terdaftar dalam status Diarsipkan. Silakan aktifkan kembali dari daftar kategori.`,
+        )
+      }
+      throw new Error(
+        `Kategori dengan nama "${existing.name}" sudah ada dan sedang aktif.`,
+      )
+    }
+
+    const cleanSlug = trimmedName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+    const id = `cat-${cleanSlug || 'item'}-${Math.random().toString(36).substring(2, 7)}`
+
+    try {
+      const [newCat] = await db
+        .insert(categories)
+        .values({
+          id,
+          name: trimmedName,
+          isArchived: false,
+        })
+        .returning()
+
+      return newCat
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : ''
+      if (msg.includes('unique') || (err as any)?.code === '23505') {
+        throw new Error(
+          `Kategori dengan nama "${trimmedName}" sudah terdaftar dalam sistem.`,
+        )
+      }
+      throw err
+    }
+  })
+
+const updateCategorySchema = z.object({
+  id: z.string(),
+  name: z.string().min(2, 'Nama kategori minimal 2 karakter').max(100),
+})
+
+export const updateCategoryAction = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => updateCategorySchema.parse(data))
+  .handler(async ({ data }) => {
+    await requireAdminSession()
+    const trimmedName = data.name.trim()
+
+    // Pengecekan duplikasi nama pada kategori lain
+    const [existing] = await db
+      .select({
+        id: categories.id,
+        name: categories.name,
+      })
+      .from(categories)
+      .where(
+        and(ilike(categories.name, trimmedName), ne(categories.id, data.id)),
+      )
+
+    if (existing) {
+      throw new Error(
+        `Nama kategori "${existing.name}" sudah digunakan oleh kategori lain.`,
+      )
+    }
+
+    try {
+      const [updated] = await db
+        .update(categories)
+        .set({ name: trimmedName })
+        .where(eq(categories.id, data.id))
+        .returning()
+
+      if (!updated) {
+        throw new Error('Kategori tidak ditemukan.')
+      }
+      return updated
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : ''
+      if (msg.includes('unique') || (err as any)?.code === '23505') {
+        throw new Error(
+          `Nama kategori "${trimmedName}" sudah digunakan oleh kategori lain.`,
+        )
+      }
+      throw err
+    }
+  })
+
+const toggleArchiveCategorySchema = z.object({
+  id: z.string(),
+  isArchived: z.boolean(),
+})
+
+export const toggleArchiveCategoryAction = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => toggleArchiveCategorySchema.parse(data))
+  .handler(async ({ data }) => {
+    await requireAdminSession()
+    const [updated] = await db
+      .update(categories)
+      .set({ isArchived: data.isArchived })
+      .where(eq(categories.id, data.id))
+      .returning()
+
+    if (!updated) {
+      throw new Error('Kategori tidak ditemukan.')
+    }
+    return updated
+  })
+
+// ==========================================
+// 2. MASTER DATA: LOKASI & GEDUNG KAMPUS
+// ==========================================
+
+export const getAdminLocations = createServerFn({ method: 'GET' })
+  .handler(async () => {
+    await requireAdminSession()
+    return db.query.locations.findMany({
+      orderBy: [desc(locations.createdAt)],
+    })
+  })
+
+const createLocationSchema = z.object({
+  campus: z.string().default('Bumi Tadulako Tondo'),
+  building: z.string().min(2, 'Nama gedung minimal 2 karakter').max(100),
+  floor: z.string().optional().nullable(),
+  roomOrArea: z.string().optional().nullable(),
+})
+
+export const createLocationAction = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => createLocationSchema.parse(data))
+  .handler(async ({ data }) => {
+    await requireAdminSession()
+    const buildingTrimmed = data.building.trim()
+    const floorTrimmed = data.floor?.trim() || null
+    const roomTrimmed = data.roomOrArea?.trim() || null
+    const campusTrimmed = data.campus?.trim() || 'Bumi Tadulako Tondo'
+
+    // Pengecekan duplikasi lokasi
+    const existingLocations = await db
+      .select({
+        id: locations.id,
+        building: locations.building,
+        floor: locations.floor,
+        roomOrArea: locations.roomOrArea,
+        isArchived: locations.isArchived,
+      })
+      .from(locations)
+      .where(ilike(locations.building, buildingTrimmed))
+
+    const exactMatch = existingLocations.find(
+      (l) =>
+        (l.floor || '').toLowerCase() === (floorTrimmed || '').toLowerCase() &&
+        (l.roomOrArea || '').toLowerCase() === (roomTrimmed || '').toLowerCase(),
+    )
+
+    if (exactMatch) {
+      if (exactMatch.isArchived) {
+        throw new Error(
+          `Lokasi "${buildingTrimmed}" sudah terdaftar namun berstatus Diarsipkan. Silakan aktifkan kembali dari daftar lokasi.`,
+        )
+      }
+      throw new Error(
+        `Lokasi "${buildingTrimmed}" dengan lantai/ruangan tersebut sudah terdaftar dan sedang aktif.`,
+      )
+    }
+
+    const cleanSlug = buildingTrimmed
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+    const id = `loc-${cleanSlug || 'area'}-${Math.random().toString(36).substring(2, 7)}`
+
+    const [newLoc] = await db
+      .insert(locations)
+      .values({
+        id,
+        campus: campusTrimmed,
+        building: buildingTrimmed,
+        floor: floorTrimmed,
+        roomOrArea: roomTrimmed,
+        isArchived: false,
+      })
+      .returning()
+
+    return newLoc
+  })
+
+const updateLocationSchema = z.object({
+  id: z.string(),
+  campus: z.string().default('Bumi Tadulako Tondo'),
+  building: z.string().min(2, 'Nama gedung minimal 2 karakter').max(100),
+  floor: z.string().optional().nullable(),
+  roomOrArea: z.string().optional().nullable(),
+})
+
+export const updateLocationAction = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => updateLocationSchema.parse(data))
+  .handler(async ({ data }) => {
+    await requireAdminSession()
+    const [updated] = await db
+      .update(locations)
+      .set({
+        campus: data.campus?.trim() || 'Bumi Tadulako Tondo',
+        building: data.building.trim(),
+        floor: data.floor?.trim() || null,
+        roomOrArea: data.roomOrArea?.trim() || null,
+      })
+      .where(eq(locations.id, data.id))
+      .returning()
+
+    if (!updated) {
+      throw new Error('Lokasi tidak ditemukan.')
+    }
+    return updated
+  })
+
+const toggleArchiveLocationSchema = z.object({
+  id: z.string(),
+  isArchived: z.boolean(),
+})
+
+export const toggleArchiveLocationAction = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => toggleArchiveLocationSchema.parse(data))
+  .handler(async ({ data }) => {
+    await requireAdminSession()
+    const [updated] = await db
+      .update(locations)
+      .set({ isArchived: data.isArchived })
+      .where(eq(locations.id, data.id))
+      .returning()
+
+    if (!updated) {
+      throw new Error('Lokasi tidak ditemukan.')
+    }
+    return updated
+  })
+
+// ==========================================
+// 3. MANAJEMEN AKUN STAF
+// ==========================================
+
+export const getAdminStaffUsers = createServerFn({ method: 'GET' })
+  .handler(async () => {
+    await requireAdminSession()
+    const staffList = await db.query.user.findMany({
+      where: or(
+        eq(user.role, 'admin'),
+        eq(user.role, 'technician'),
+        eq(user.role, 'monitor'),
+      ),
+      orderBy: [desc(user.createdAt)],
+    })
+
+    return staffList.map((u) => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      role: u.role,
+      createdAt: u.createdAt,
+      image: u.image,
+    }))
+  })
+
+const createStaffUserSchema = z.object({
+  name: z.string().min(2, 'Nama staf minimal 2 karakter').max(100),
+  email: z.string().email('Format email tidak valid'),
+  role: z.enum(['technician', 'monitor', 'admin']),
+  password: z.string().min(8, 'Password minimal 8 karakter'),
+})
+
+export const createStaffUserAction = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => createStaffUserSchema.parse(data))
+  .handler(async ({ data }) => {
+    await requireAdminSession()
+
+    const normalizedEmail = data.email.toLowerCase().trim()
+    const [existing] = await db
+      .select({ id: user.id })
+      .from(user)
+      .where(eq(user.email, normalizedEmail))
+
+    if (existing) {
+      throw new Error(`Email ${normalizedEmail} sudah terdaftar di sistem.`)
+    }
+
+    const authRes = await auth.api.signUpEmail({
+      body: {
+        name: data.name.trim(),
+        email: normalizedEmail,
+        password: data.password,
+      },
+    })
+
+    if (!authRes?.user) {
+      throw new Error('Gagal mendaftarkan akun di auth service.')
+    }
+
+    await db
+      .update(user)
+      .set({ role: data.role })
+      .where(eq(user.id, authRes.user.id))
+
+    return {
+      id: authRes.user.id,
+      name: data.name.trim(),
+      email: normalizedEmail,
+      role: data.role,
+    }
+  })
+
+const updateStaffRoleSchema = z.object({
+  userId: z.string(),
+  newRole: z.enum(['technician', 'monitor', 'admin', 'reporter']),
+})
+
+export const updateStaffRoleAction = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => updateStaffRoleSchema.parse(data))
+  .handler(async ({ data }) => {
+    const adminUser = await requireAdminSession()
+    if (data.userId === adminUser.id && data.newRole !== 'admin') {
+      throw new Error('Anda tidak dapat mencabut wewenang Admin dari akun Anda sendiri.')
+    }
+
+    const [updated] = await db
+      .update(user)
+      .set({ role: data.newRole })
+      .where(eq(user.id, data.userId))
+      .returning()
+
+    if (!updated) {
+      throw new Error('Pengguna tidak ditemukan.')
+    }
+
+    return {
+      id: updated.id,
+      name: updated.name,
+      role: updated.role,
+    }
+  })
+
+const resetStaffPasswordSchema = z.object({
+  userId: z.string(),
+  newPassword: z.string().min(8, 'Password baru minimal 8 karakter'),
+})
+
+export const resetStaffPasswordAction = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => resetStaffPasswordSchema.parse(data))
+  .handler(async ({ data }) => {
+    await requireAdminSession()
+
+    const hashedPassword = await hashPassword(data.newPassword)
+    const updated = await db
+      .update(account)
+      .set({ password: hashedPassword })
+      .where(
+        and(
+          eq(account.userId, data.userId),
+          eq(account.providerId, 'credential'),
+        ),
+      )
+      .returning()
+
+    if (!updated.length) {
+      throw new Error('Akun kredensial (email & password) tidak ditemukan untuk staf ini.')
+    }
+
+    return { success: true }
+  })
+

@@ -12,10 +12,13 @@ import {
   Wrench,
   Camera,
   RotateCcw,
+  Layers,
+  Users,
 } from 'lucide-react'
 import { getCurrentUserSession } from '~/lib/auth-server'
 import { DashboardHeader } from '~/features/dashboard/components/dashboard-header'
 import { Button } from '~/components/ui/button'
+import { Pagination } from '~/components/ui/pagination'
 import { formatDate } from '~/lib/utils'
 import {
   getAdminReports,
@@ -26,6 +29,9 @@ import {
   markDuplicateReportAction,
   assignTechnicianAction,
   reviewCompletionAction,
+  getAdminCategories,
+  getAdminLocations,
+  getAdminStaffUsers,
 } from '~/features/admin/admin.fn'
 import {
   ReportStatusBadge,
@@ -42,6 +48,12 @@ import {
   ReportDetailDrawer,
   type ReportDetailData,
 } from '~/features/admin/components/report-detail-drawer'
+import {
+  MasterDataManagement,
+} from '~/features/admin/components/master-data-management'
+import {
+  StaffManagement,
+} from '~/features/admin/components/staff-management'
 
 export const Route = createFileRoute('/dashboard/admin')({
   beforeLoad: async () => {
@@ -59,30 +71,60 @@ export const Route = createFileRoute('/dashboard/admin')({
     return { user: session.user }
   },
   loader: async ({ context }: { context: { user: any } }) => {
-    const [reportsData, technicians] = await Promise.all([
-      getAdminReports({ data: { status: 'all', search: '' } }),
-      getAvailableTechnicians(),
-    ])
+    const [reportsData, technicians, categories, locations, staff] =
+      await Promise.all([
+        getAdminReports({ data: { status: 'all', search: '', page: 1, limit: 10 } }),
+        getAvailableTechnicians(),
+        getAdminCategories(),
+        getAdminLocations(),
+        getAdminStaffUsers(),
+      ])
 
     return {
       user: context.user,
       initialReports: reportsData.reports,
       initialStats: reportsData.stats,
+      initialPagination: reportsData.pagination,
       technicians,
+      initialCategories: categories,
+      initialLocations: locations,
+      initialStaff: staff,
     }
   },
   component: AdminDashboardPage,
 })
 
 function AdminDashboardPage() {
-  const { user, initialReports, initialStats, technicians } =
-    Route.useLoaderData()
+  const {
+    user,
+    initialReports,
+    initialStats,
+    initialPagination,
+    technicians,
+    initialCategories,
+    initialLocations,
+    initialStaff,
+  } = Route.useLoaderData()
   const router = useRouter()
+
+  const [activeMainTab, setActiveMainTab] = React.useState<
+    'reports' | 'master' | 'staff'
+  >('reports')
 
   const [selectedStatus, setSelectedStatus] = React.useState<string>('all')
   const [searchQuery, setSearchQuery] = React.useState<string>('')
   const [reportsList, setReportsList] = React.useState(initialReports)
   const [stats, setStats] = React.useState(initialStats)
+  const [currentPage, setCurrentPage] = React.useState(initialPagination?.page || 1)
+  const [pageSize, setPageSize] = React.useState(initialPagination?.limit || 10)
+  const [pagination, setPagination] = React.useState(
+    initialPagination || {
+      page: 1,
+      limit: 10,
+      totalCount: initialReports.length,
+      totalPages: Math.max(1, Math.ceil(initialReports.length / 10)),
+    },
+  )
   const [isFetching, setIsFetching] = React.useState(false)
 
   // Drawer detail state
@@ -106,14 +148,22 @@ function AdminDashboardPage() {
     }, 4000)
   }
 
-  const reloadData = async (statusFilter = selectedStatus, query = searchQuery) => {
+  const reloadData = async (
+    statusFilter = selectedStatus,
+    query = searchQuery,
+    page = currentPage,
+    limit = pageSize,
+  ) => {
     setIsFetching(true)
     try {
       const res = await getAdminReports({
-        data: { status: statusFilter, search: query },
+        data: { status: statusFilter, search: query, page, limit },
       })
       setReportsList(res.reports)
       setStats(res.stats)
+      if (res.pagination) {
+        setPagination(res.pagination)
+      }
     } finally {
       setIsFetching(false)
     }
@@ -121,12 +171,25 @@ function AdminDashboardPage() {
 
   const handleStatusFilterChange = (status: string) => {
     setSelectedStatus(status)
-    reloadData(status, searchQuery)
+    setCurrentPage(1)
+    reloadData(status, searchQuery, 1, pageSize)
   }
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    reloadData(selectedStatus, searchQuery)
+    setCurrentPage(1)
+    reloadData(selectedStatus, searchQuery, 1, pageSize)
+  }
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage)
+    reloadData(selectedStatus, searchQuery, newPage, pageSize)
+  }
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize)
+    setCurrentPage(1)
+    reloadData(selectedStatus, searchQuery, 1, newSize)
   }
 
   const openDetailDrawer = async (reportId: string) => {
@@ -322,8 +385,55 @@ function AdminDashboardPage() {
       ) : null}
 
       <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full space-y-6">
-        {/* Metric Summary Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        {/* Navigation Tabs Utama Admin */}
+        <div className="flex flex-wrap items-center gap-2.5 pb-2 border-b-2 border-[#09090B]">
+          <button
+            type="button"
+            onClick={() => setActiveMainTab('reports')}
+            className={`flex items-center gap-2 px-4 py-2.5 border-2 border-[#09090B] text-xs md:text-sm font-extrabold cursor-pointer transition-all ${
+              activeMainTab === 'reports'
+                ? 'bg-[#BAE6FD] shadow-[4px_4px_0_0_#09090B] translate-x-[-2px] translate-y-[-2px]'
+                : 'bg-white hover:bg-[#FAF8F5] text-[#09090B]'
+            }`}
+          >
+            <ClipboardList className="w-4 h-4" strokeWidth={2.5} />
+            <span>Operasional Pengaduan</span>
+            <span className="ml-1 text-[10px] font-mono px-1.5 py-0.2 bg-[#FAF8F5] border border-[#09090B]">
+              {stats.total}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveMainTab('master')}
+            className={`flex items-center gap-2 px-4 py-2.5 border-2 border-[#09090B] text-xs md:text-sm font-extrabold cursor-pointer transition-all ${
+              activeMainTab === 'master'
+                ? 'bg-[#FEF08A] shadow-[4px_4px_0_0_#09090B] translate-x-[-2px] translate-y-[-2px]'
+                : 'bg-white hover:bg-[#FAF8F5] text-[#09090B]'
+            }`}
+          >
+            <Layers className="w-4 h-4" strokeWidth={2.5} />
+            <span>Master Kategori &amp; Gedung</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveMainTab('staff')}
+            className={`flex items-center gap-2 px-4 py-2.5 border-2 border-[#09090B] text-xs md:text-sm font-extrabold cursor-pointer transition-all ${
+              activeMainTab === 'staff'
+                ? 'bg-[#C4B5FD] shadow-[4px_4px_0_0_#09090B] translate-x-[-2px] translate-y-[-2px]'
+                : 'bg-white hover:bg-[#FAF8F5] text-[#09090B]'
+            }`}
+          >
+            <Users className="w-4 h-4" strokeWidth={2.5} />
+            <span>Manajemen Akun Staf</span>
+          </button>
+        </div>
+
+        {activeMainTab === 'reports' ? (
+          <>
+            {/* Metric Summary Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <div className="p-4 bg-white border-2 border-[#09090B] shadow-[4px_4px_0_0_#09090B]">
             <div className="flex items-center justify-between text-[#52525B] text-xs font-bold uppercase">
               <span>Total Laporan</span>
@@ -403,7 +513,8 @@ function AdminDashboardPage() {
               onClick={() => {
                 setSearchQuery('')
                 setSelectedStatus('all')
-                reloadData('all', '')
+                setCurrentPage(1)
+                reloadData('all', '', 1, pageSize)
               }}
               disabled={isFetching}
               className="cursor-pointer shrink-0"
@@ -451,7 +562,7 @@ function AdminDashboardPage() {
               Daftar Laporan Penanganan Sarana
             </div>
             <div className="text-xs font-mono text-[#52525B]">
-              Menampilkan {reportsList.length} laporan
+              Total: {pagination.totalCount} laporan
             </div>
           </div>
 
@@ -609,8 +720,40 @@ function AdminDashboardPage() {
               </table>
             </div>
           )}
+
+          {/* Pagination Container */}
+          {reportsList.length > 0 && pagination && (
+            <div className="p-4 bg-[#FAF8F5]">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={pagination.totalPages}
+                totalCount={pagination.totalCount}
+                pageSize={pageSize}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+              />
+            </div>
+          )}
         </div>
-      </main>
+      </>
+    ) : null}
+
+    {activeMainTab === 'master' ? (
+      <MasterDataManagement
+        initialCategories={initialCategories}
+        initialLocations={initialLocations}
+        onNotify={showToast}
+      />
+    ) : null}
+
+    {activeMainTab === 'staff' ? (
+      <StaffManagement
+        initialStaff={initialStaff}
+        currentAdminId={user.id}
+        onNotify={showToast}
+      />
+    ) : null}
+  </main>
 
       {/* Drawer Detail Laporan */}
       <ReportDetailDrawer

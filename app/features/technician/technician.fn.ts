@@ -21,6 +21,8 @@ async function requireTechnicianSession() {
 const getTechnicianTasksSchema = z.object({
   tab: z.enum(['all', 'assigned', 'in_progress', 'review', 'completed']).optional(),
   search: z.string().optional(),
+  page: z.number().default(1).optional(),
+  limit: z.number().default(10).optional(),
 })
 
 export const getTechnicianTasks = createServerFn({ method: 'GET' })
@@ -66,10 +68,17 @@ export const getTechnicianTasks = createServerFn({ method: 'GET' })
       )
     }
 
-    const allFileKeys = filtered.flatMap((r) => r.photos.map((p) => p.fileKey))
+    const page = Math.max(1, data.page || 1)
+    const limit = Math.max(1, data.limit || 10)
+    const totalCount = filtered.length
+    const totalPages = Math.max(1, Math.ceil(totalCount / limit))
+    const paginatedTasks = filtered.slice((page - 1) * limit, page * limit)
+
+    // Generate signed URLs only for the current page
+    const allFileKeys = paginatedTasks.flatMap((r) => r.photos.map((p) => p.fileKey))
     const signedUrlsMap = await getBatchSignedUrls(allFileKeys)
 
-    const tasksWithUrls = filtered.map((r) => {
+    const tasksWithUrls = paginatedTasks.map((r) => {
       const photosWithUrls = r.photos.map((p) => ({
         id: p.id,
         photoType: p.photoType,
@@ -78,35 +87,41 @@ export const getTechnicianTasks = createServerFn({ method: 'GET' })
         createdAt: p.createdAt,
       }))
 
-        return {
-          id: r.id,
-          trackingCode: r.trackingCode,
-          title: r.title,
-          descriptionText: r.descriptionText,
-          urgency: r.urgency,
-          status: r.status,
-          locationDetail: r.locationDetail,
-          createdAt: r.createdAt,
-          updatedAt: r.updatedAt,
-          categoryName: r.category?.name || 'Tanpa Kategori',
-          building: r.location?.building || 'Area Kampus',
-          floor: r.location?.floor || '',
-          roomOrArea: r.location?.roomOrArea || '',
-          photos: photosWithUrls,
-          timeline: r.timeline.map((t) => ({
-            id: t.id,
-            action: t.action,
-            fromStatus: t.fromStatus,
-            toStatus: t.toStatus,
-            notes: t.notes,
-            createdAt: t.createdAt,
-          })),
-        }
-      })
+      return {
+        id: r.id,
+        trackingCode: r.trackingCode,
+        title: r.title,
+        descriptionText: r.descriptionText,
+        urgency: r.urgency,
+        status: r.status,
+        locationDetail: r.locationDetail,
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
+        categoryName: r.category?.name || 'Tanpa Kategori',
+        building: r.location?.building || 'Area Kampus',
+        floor: r.location?.floor || '',
+        roomOrArea: r.location?.roomOrArea || '',
+        photos: photosWithUrls,
+        timeline: r.timeline.map((t) => ({
+          id: t.id,
+          action: t.action,
+          fromStatus: t.fromStatus,
+          toStatus: t.toStatus,
+          notes: t.notes,
+          createdAt: t.createdAt,
+        })),
+      }
+    })
 
     return {
       stats,
       tasks: tasksWithUrls,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages,
+      },
     }
   })
 

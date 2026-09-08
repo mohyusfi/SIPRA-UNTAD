@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { getCurrentUserSession } from '~/lib/auth-server'
 import { DashboardHeader } from '~/features/dashboard/components/dashboard-header'
+import { Pagination } from '~/components/ui/pagination'
 import {
   getTechnicianTasks,
   startTaskAction,
@@ -41,19 +42,20 @@ export const Route = createFileRoute('/dashboard/technician')({
   },
   loader: async ({ context }: { context: { user: any } }) => {
     const data = await getTechnicianTasks({
-      data: { tab: 'all', search: '' },
+      data: { tab: 'all', search: '', page: 1, limit: 10 },
     })
     return {
       user: context.user,
       initialTasks: data.tasks,
       initialStats: data.stats,
+      initialPagination: data.pagination,
     }
   },
   component: TechnicianDashboardPage,
 })
 
 function TechnicianDashboardPage() {
-  const { user, initialTasks, initialStats } = Route.useLoaderData()
+  const { user, initialTasks, initialStats, initialPagination } = Route.useLoaderData()
 
   const [selectedTab, setSelectedTab] = React.useState<
     'all' | 'assigned' | 'in_progress' | 'review' | 'completed'
@@ -61,6 +63,16 @@ function TechnicianDashboardPage() {
   const [searchQuery, setSearchQuery] = React.useState('')
   const [tasks, setTasks] = React.useState<TechnicianTaskItem[]>(initialTasks as any)
   const [stats, setStats] = React.useState(initialStats)
+  const [currentPage, setCurrentPage] = React.useState(initialPagination?.page || 1)
+  const [pageSize, setPageSize] = React.useState(initialPagination?.limit || 10)
+  const [pagination, setPagination] = React.useState(
+    initialPagination || {
+      page: 1,
+      limit: 10,
+      totalCount: initialTasks.length,
+      totalPages: Math.max(1, Math.ceil(initialTasks.length / 10)),
+    },
+  )
   const [isFetching, setIsFetching] = React.useState(false)
 
   const [startingTaskId, setStartingTaskId] = React.useState<string | null>(null)
@@ -77,14 +89,19 @@ function TechnicianDashboardPage() {
   const reloadData = async (
     tab = selectedTab,
     search = searchQuery,
+    page = currentPage,
+    limit = pageSize,
   ) => {
     setIsFetching(true)
     try {
       const res = await getTechnicianTasks({
-        data: { tab, search },
+        data: { tab, search, page, limit },
       })
       setTasks(res.tasks as any)
       setStats(res.stats)
+      if (res.pagination) {
+        setPagination(res.pagination)
+      }
     } finally {
       setIsFetching(false)
     }
@@ -94,12 +111,25 @@ function TechnicianDashboardPage() {
     tab: 'all' | 'assigned' | 'in_progress' | 'review' | 'completed',
   ) => {
     setSelectedTab(tab)
-    reloadData(tab, searchQuery)
+    setCurrentPage(1)
+    reloadData(tab, searchQuery, 1, pageSize)
   }
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    reloadData(selectedTab, searchQuery)
+    setCurrentPage(1)
+    reloadData(selectedTab, searchQuery, 1, pageSize)
+  }
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage)
+    reloadData(selectedTab, searchQuery, newPage, pageSize)
+  }
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize)
+    setCurrentPage(1)
+    reloadData(selectedTab, searchQuery, 1, newSize)
   }
 
   const handleStartTask = async (taskId: string) => {
@@ -362,16 +392,31 @@ function TechnicianDashboardPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {tasks.map((task) => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                onStart={handleStartTask}
-                onOpenCompleteModal={handleOpenCompleteModal}
-                isStarting={startingTaskId === task.id}
-              />
-            ))}
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {tasks.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onStart={handleStartTask}
+                  onOpenCompleteModal={handleOpenCompleteModal}
+                  isStarting={startingTaskId === task.id}
+                />
+              ))}
+            </div>
+
+            {pagination && (
+              <div className="bg-white p-4 border-2 border-[#09090B] shadow-[4px_4px_0_0_#09090B]">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={pagination.totalPages}
+                  totalCount={pagination.totalCount}
+                  pageSize={pageSize}
+                  onPageChange={handlePageChange}
+                  onPageSizeChange={handlePageSizeChange}
+                />
+              </div>
+            )}
           </div>
         )}
       </main>
