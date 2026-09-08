@@ -4,6 +4,22 @@ import { PublicNavbar } from '~/components/layout/public-navbar'
 import { RegisterForm } from '~/features/auth/components/register-form'
 
 export const Route = createFileRoute('/register')({
+  head: () => ({
+    meta: [
+      {
+        title: 'Daftar Akun Pelapor | SIPRA-UNTAD',
+      },
+      {
+        name: 'description',
+        content:
+          'Buat akun pelapor SIPRA-UNTAD untuk melaporkan kerusakan fasilitas kampus Universitas Tadulako secara terverifikasi.',
+      },
+      {
+        name: 'robots',
+        content: 'noindex, nofollow',
+      },
+    ],
+  }),
   beforeLoad: async () => {
     const session = await getCurrentUserSession()
     if (session?.user) {

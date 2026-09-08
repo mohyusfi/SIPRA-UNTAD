@@ -12,6 +12,69 @@ import { PublicNavbar } from '~/components/layout/public-navbar'
 import { BottomNav } from '~/components/layout/bottom-nav'
 
 export const Route = createFileRoute('/')({
+  head: () => ({
+    meta: [
+      {
+        title: 'Lapor Kerusakan Fasilitas Kampus UNTAD | SIPRA-UNTAD',
+      },
+      {
+        name: 'description',
+        content:
+          'Laporkan kerusakan infrastruktur kampus Universitas Tadulako secara anonim atau terverifikasi. Pantau status perbaikan real-time dengan kode tiket resmi.',
+      },
+      {
+        name: 'og:title',
+        content: 'Lapor Kerusakan Fasilitas Kampus UNTAD | SIPRA-UNTAD',
+      },
+      {
+        name: 'og:description',
+        content:
+          'Laporkan kerusakan infrastruktur kampus Universitas Tadulako secara anonim atau terverifikasi. Pantau status perbaikan real-time.',
+      },
+      {
+        name: 'og:url',
+        content: 'https://sipra-untad.vercel.app/',
+      },
+      {
+        name: 'og:type',
+        content: 'website',
+      },
+    ],
+    links: [
+      {
+        rel: 'canonical',
+        href: 'https://sipra-untad.vercel.app/',
+      },
+    ],
+    scripts: [
+      {
+        type: 'application/ld+json',
+        children: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'WebApplication',
+          name: 'SIPRA-UNTAD',
+          alternateName: 'Sistem Pelaporan Infrastruktur Kampus',
+          url: 'https://sipra-untad.vercel.app/',
+          applicationCategory: 'GovernmentApplication',
+          operatingSystem: 'Web',
+          description:
+            'Sistem pelaporan kerusakan infrastruktur kampus Universitas Tadulako. Laporkan fasilitas rusak secara anonim, pantau status perbaikan real-time.',
+          provider: {
+            '@type': 'EducationalOrganization',
+            name: 'Universitas Tadulako',
+            alternateName: 'UNTAD',
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: 'Palu',
+              addressRegion: 'Sulawesi Tengah',
+              addressCountry: 'ID',
+            },
+          },
+          inLanguage: 'id',
+        }),
+      },
+    ],
+  }),
   loader: async () => {
     return await getMasterData()
   },
@@ -53,9 +116,9 @@ function HomePage() {
               </span>
             </div>
 
-            <h2 className="text-3xl md:text-5xl font-extrabold text-[#09090B] tracking-tight leading-tight">
+            <h1 className="text-3xl md:text-5xl font-extrabold text-[#09090B] tracking-tight leading-tight">
               Laporkan Kerusakan & Kawal Fasilitas Bersama.
-            </h2>
+            </h1>
 
             <p className="text-sm md:text-base text-[#52525B] mt-4 leading-relaxed font-medium">
               Sampaikan keluhan fasilitas fisik di lingkungan Universitas

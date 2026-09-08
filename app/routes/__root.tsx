@@ -9,6 +9,8 @@ import {
 } from '@tanstack/react-router'
 import '../app.css'
 
+const SITE_URL = 'https://sipra-untad.vercel.app'
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -22,8 +24,33 @@ export const Route = createRootRoute({
       {
         title: 'SIPRA-UNTAD - Sistem Pelaporan Infrastruktur Kampus',
       },
+      {
+        name: 'description',
+        content:
+          'SIPRA-UNTAD: Sistem pelaporan kerusakan infrastruktur kampus Universitas Tadulako. Laporkan fasilitas rusak secara anonim, pantau status perbaikan real-time.',
+      },
+      {
+        name: 'og:site_name',
+        content: 'SIPRA-UNTAD',
+      },
+      {
+        name: 'og:locale',
+        content: 'id_ID',
+      },
+      {
+        name: 'twitter:card',
+        content: 'summary',
+      },
     ],
     links: [
+      {
+        rel: 'icon',
+        href: '/favicon.ico',
+      },
+      {
+        rel: 'canonical',
+        href: SITE_URL,
+      },
       {
         rel: 'preconnect',
         href: 'https://fonts.googleapis.com',

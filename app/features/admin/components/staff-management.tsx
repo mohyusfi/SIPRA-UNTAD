@@ -9,6 +9,7 @@ import {
   X,
   Search,
   Sparkles,
+  ChevronDown,
 } from 'lucide-react'
 import { Button } from '~/components/ui/button'
 import { formatDate, formatErrorMessage } from '~/lib/utils'
@@ -256,15 +257,20 @@ export function StaffManagement({
               <label className="block text-xs font-bold text-[#09090B] mb-1">
                 Peran / Otoritas Akses *
               </label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value as any)}
-                className="w-full px-3 py-2 text-xs font-bold border-2 border-[#09090B] bg-[#FAF8F5] focus:bg-white focus:outline-none shadow-[2px_2px_0_0_#09090B] cursor-pointer"
-              >
-                <option value="technician">Teknisi Lapangan (Pengerjaan &amp; Bukti Fisik)</option>
-                <option value="monitor">Pemantau &amp; Pimpinan (Analitik &amp; Audit SLA)</option>
-                <option value="admin">Admin Sarpras (Kendali Penuh Sistem)</option>
-              </select>
+              <div className="relative">
+                <select
+                  value={role}
+                  onChange={(e) => setRole(e.target.value as any)}
+                  className="w-full appearance-none pl-3 pr-8 py-2 text-xs font-bold border-2 border-[#09090B] bg-[#FAF8F5] focus:bg-white focus:outline-none shadow-[2px_2px_0_0_#09090B] cursor-pointer"
+                >
+                  <option value="technician">Teknisi Lapangan (Pengerjaan &amp; Bukti Fisik)</option>
+                  <option value="monitor">Pemantau &amp; Pimpinan (Analitik &amp; Audit SLA)</option>
+                  <option value="admin">Admin Sarpras (Kendali Penuh Sistem)</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 bg-[#FAF8F5] border-l-2 border-[#09090B]">
+                  <ChevronDown className="w-4 h-4 text-[#09090B]" strokeWidth={2.5} />
+                </div>
+              </div>
             </div>
 
             <div>
@@ -324,29 +330,33 @@ export function StaffManagement({
               </div>
             </div>
 
-            {/* Filter Search & Role */}
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#52525B]" />
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+              <div className="relative flex-1 sm:w-48 lg:w-56">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#52525B]" />
                 <input
                   type="text"
                   placeholder="Cari nama / email..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8 pr-2.5 py-1 text-xs border border-[#09090B] bg-[#FAF8F5] focus:outline-none"
+                  className="w-full pl-9 pr-3 py-2 text-xs font-medium border-2 border-[#09090B] bg-[#FAF8F5] focus:bg-white focus:outline-none shadow-[2px_2px_0_0_#09090B] placeholder:text-[#71717A] transition-colors"
                 />
               </div>
 
-              <select
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
-                className="px-2 py-1 text-xs font-bold border border-[#09090B] bg-white cursor-pointer"
-              >
-                <option value="all">Semua Peran</option>
-                <option value="technician">Teknisi</option>
-                <option value="monitor">Pemantau</option>
-                <option value="admin">Admin</option>
-              </select>
+              <div className="relative w-full sm:w-auto shrink-0">
+                <select
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value)}
+                  className="w-full appearance-none pl-3 pr-9 py-2 text-xs font-bold border-2 border-[#09090B] bg-white shadow-[2px_2px_0_0_#09090B] focus:outline-none focus:bg-[#FAF8F5] cursor-pointer"
+                >
+                  <option value="all">Semua Peran</option>
+                  <option value="technician">Teknisi</option>
+                  <option value="monitor">Pemantau</option>
+                  <option value="admin">Admin</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 bg-white border-l-2 border-[#09090B]">
+                  <ChevronDown className="w-3.5 h-3.5 text-[#09090B]" strokeWidth={2.5} />
+                </div>
+              </div>
             </div>
           </div>
 

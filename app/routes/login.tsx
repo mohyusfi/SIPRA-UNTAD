@@ -10,6 +10,22 @@ const loginSearchSchema = z.object({
 })
 
 export const Route = createFileRoute('/login')({
+  head: () => ({
+    meta: [
+      {
+        title: 'Masuk Sistem | SIPRA-UNTAD',
+      },
+      {
+        name: 'description',
+        content:
+          'Masuk ke sistem SIPRA-UNTAD untuk mengelola laporan kerusakan infrastruktur kampus Universitas Tadulako.',
+      },
+      {
+        name: 'robots',
+        content: 'noindex, nofollow',
+      },
+    ],
+  }),
   validateSearch: (search: Record<string, unknown>) =>
     loginSearchSchema.parse(search),
   beforeLoad: async () => {

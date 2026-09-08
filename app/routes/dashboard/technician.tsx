@@ -27,6 +27,12 @@ import { formatErrorMessage } from '~/lib/utils'
 import { NeoToast, type ToastData } from '~/components/ui/neo-toast'
 
 export const Route = createFileRoute('/dashboard/technician')({
+  head: () => ({
+    meta: [
+      { title: 'Teknisi Dashboard | SIPRA-UNTAD' },
+      { name: 'robots', content: 'noindex, nofollow' },
+    ],
+  }),
   beforeLoad: async () => {
     const session = await getCurrentUserSession()
     if (!session?.user) {

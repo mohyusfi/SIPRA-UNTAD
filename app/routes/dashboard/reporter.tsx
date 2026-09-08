@@ -34,6 +34,12 @@ import {
 type StatusFilterType = 'all' | 'pending' | 'in_progress' | 'completed' | 'other'
 
 export const Route = createFileRoute('/dashboard/reporter')({
+  head: () => ({
+    meta: [
+      { title: 'Reporter Dashboard | SIPRA-UNTAD' },
+      { name: 'robots', content: 'noindex, nofollow' },
+    ],
+  }),
   beforeLoad: async () => {
     const session = await getCurrentUserSession()
     if (!session?.user) {

@@ -53,6 +53,12 @@ import {
 } from '~/features/admin/components/staff-management'
 
 export const Route = createFileRoute('/dashboard/admin')({
+  head: () => ({
+    meta: [
+      { title: 'Admin Dashboard | SIPRA-UNTAD' },
+      { name: 'robots', content: 'noindex, nofollow' },
+    ],
+  }),
   beforeLoad: async () => {
     const session = await getCurrentUserSession()
     if (!session?.user) {
@@ -372,11 +378,11 @@ function AdminDashboardPage() {
 
       <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full space-y-6">
         {/* Navigation Tabs Utama Admin */}
-        <div className="flex flex-wrap items-center gap-2.5 pb-2 border-b-2 border-[#09090B]">
+        <div className="flex items-center gap-2.5 pt-1 pb-2.5 border-b-2 border-[#09090B] overflow-x-auto scrollbar-none sm:flex-wrap">
           <button
             type="button"
             onClick={() => setActiveMainTab('reports')}
-            className={`flex items-center gap-2 px-4 py-2.5 border-2 border-[#09090B] text-xs md:text-sm font-extrabold cursor-pointer transition-all ${
+            className={`flex items-center gap-2 px-4 py-2.5 border-2 border-[#09090B] text-xs md:text-sm font-extrabold cursor-pointer transition-all shrink-0 whitespace-nowrap touch-manipulation select-none ${
               activeMainTab === 'reports'
                 ? 'bg-[#BAE6FD] shadow-[4px_4px_0_0_#09090B] translate-x-[-2px] translate-y-[-2px]'
                 : 'bg-white hover:bg-[#FAF8F5] text-[#09090B]'
@@ -384,7 +390,7 @@ function AdminDashboardPage() {
           >
             <ClipboardList className="w-4 h-4" strokeWidth={2.5} />
             <span>Operasional Pengaduan</span>
-            <span className="ml-1 text-[10px] font-mono px-1.5 py-0.2 bg-[#FAF8F5] border border-[#09090B]">
+            <span className="ml-1 text-[10px] font-mono px-1.5 py-0.5 bg-[#FAF8F5] border border-[#09090B]">
               {stats.total}
             </span>
           </button>
@@ -392,7 +398,7 @@ function AdminDashboardPage() {
           <button
             type="button"
             onClick={() => setActiveMainTab('master')}
-            className={`flex items-center gap-2 px-4 py-2.5 border-2 border-[#09090B] text-xs md:text-sm font-extrabold cursor-pointer transition-all ${
+            className={`flex items-center gap-2 px-4 py-2.5 border-2 border-[#09090B] text-xs md:text-sm font-extrabold cursor-pointer transition-all shrink-0 whitespace-nowrap touch-manipulation select-none ${
               activeMainTab === 'master'
                 ? 'bg-[#FEF08A] shadow-[4px_4px_0_0_#09090B] translate-x-[-2px] translate-y-[-2px]'
                 : 'bg-white hover:bg-[#FAF8F5] text-[#09090B]'
@@ -405,7 +411,7 @@ function AdminDashboardPage() {
           <button
             type="button"
             onClick={() => setActiveMainTab('staff')}
-            className={`flex items-center gap-2 px-4 py-2.5 border-2 border-[#09090B] text-xs md:text-sm font-extrabold cursor-pointer transition-all ${
+            className={`flex items-center gap-2 px-4 py-2.5 border-2 border-[#09090B] text-xs md:text-sm font-extrabold cursor-pointer transition-all shrink-0 whitespace-nowrap touch-manipulation select-none ${
               activeMainTab === 'staff'
                 ? 'bg-[#C4B5FD] shadow-[4px_4px_0_0_#09090B] translate-x-[-2px] translate-y-[-2px]'
                 : 'bg-white hover:bg-[#FAF8F5] text-[#09090B]'

@@ -6,6 +6,12 @@ import { DashboardHeader } from '~/features/dashboard/components/dashboard-heade
 import { ReportForm } from '~/features/reports/components/report-form'
 
 export const Route = createFileRoute('/dashboard/reporter_/new')({
+  head: () => ({
+    meta: [
+      { title: 'Buat Laporan Baru | SIPRA-UNTAD' },
+      { name: 'robots', content: 'noindex, nofollow' },
+    ],
+  }),
   beforeLoad: async () => {
     const session = await getCurrentUserSession()
     if (!session?.user) {

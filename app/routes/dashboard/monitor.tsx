@@ -26,6 +26,12 @@ const monitorSearchSchema = z.object({
 type MonitorSearch = z.infer<typeof monitorSearchSchema>
 
 export const Route = createFileRoute('/dashboard/monitor')({
+  head: () => ({
+    meta: [
+      { title: 'Monitor Dashboard | SIPRA-UNTAD' },
+      { name: 'robots', content: 'noindex, nofollow' },
+    ],
+  }),
   validateSearch: (search: Record<string, unknown>): MonitorSearch =>
     monitorSearchSchema.parse(search),
   beforeLoad: async () => {

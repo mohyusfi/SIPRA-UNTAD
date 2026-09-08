@@ -43,6 +43,22 @@ type TrackLoaderData = {
 };
 
 export const Route = createFileRoute("/track")({
+  head: () => ({
+    meta: [
+      {
+        title: "Lacak Status Laporan Kerusakan | SIPRA-UNTAD",
+      },
+      {
+        name: "description",
+        content:
+          "Cek progres penanganan laporan kerusakan fasilitas kampus UNTAD dengan kode tiket. Pantau linimasa perbaikan dari verifikasi hingga selesai.",
+      },
+      {
+        name: "robots",
+        content: "noindex, nofollow",
+      },
+    ],
+  }),
   validateSearch: (search: Record<string, unknown>) =>
     trackSearchSchema.parse(search),
   loaderDeps: ({ search }: { search: z.infer<typeof trackSearchSchema> }) => ({

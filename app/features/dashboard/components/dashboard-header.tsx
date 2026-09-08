@@ -1,8 +1,7 @@
 import * as React from 'react'
 import { Link, useNavigate, useLocation } from '@tanstack/react-router'
-import { Radio, LogOut, ExternalLink, Shield, Key, CheckCircle2, Menu, X, PlusCircle } from 'lucide-react'
+import { Radio, LogOut, ExternalLink, Shield, Key, CheckCircle2, Menu, X, PlusCircle, ChevronDown } from 'lucide-react'
 import { authClient } from '~/lib/auth-client'
-import { Button } from '~/components/ui/button'
 import { ChangePasswordModal } from '~/features/auth/components/change-password-modal'
 
 interface DashboardHeaderProps {
@@ -25,10 +24,12 @@ export function DashboardHeader({
   const [isLoggingOut, setIsLoggingOut] = React.useState(false)
   const [isChangePasswordOpen, setIsChangePasswordOpen] = React.useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false)
+  const [isDesktopMenuOpen, setIsDesktopMenuOpen] = React.useState(false)
   const [successToast, setSuccessToast] = React.useState<string | null>(null)
 
   React.useEffect(() => {
     setIsMobileMenuOpen(false)
+    setIsDesktopMenuOpen(false)
   }, [location.pathname])
 
   const handlePasswordSuccess = (message: string) => {
@@ -93,11 +94,17 @@ export function DashboardHeader({
         </Link>
 
         {/* Desktop Controls (hidden on mobile) */}
-        <div className="hidden md:flex items-center gap-3">
-          {/* User Profile Card */}
-          <div className="px-3 py-1.5 border-2 border-[#09090B] bg-white shadow-[2px_2px_0_0_#09090B] flex items-center gap-2.5">
+        <div className="relative hidden md:block">
+          <button
+            type="button"
+            onClick={() => setIsDesktopMenuOpen(!isDesktopMenuOpen)}
+            className={`px-3 py-1.5 border-2 border-[#09090B] bg-white shadow-[2px_2px_0_0_#09090B] hover:bg-[#FAF8F5] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center gap-3 cursor-pointer select-none ${
+              isDesktopMenuOpen ? 'bg-[#FAF8F5] translate-x-0.5 translate-y-0.5 shadow-none' : ''
+            }`}
+            title="Menu Akun &amp; Profil"
+          >
             <div
-              className={`w-7 h-7 border border-[#09090B] flex items-center justify-center font-bold text-xs ${roleColor}`}
+              className={`w-7 h-7 border border-[#09090B] flex items-center justify-center font-bold text-xs shrink-0 ${roleColor}`}
             >
               <Shield className="w-3.5 h-3.5 text-[#09090B]" strokeWidth={2.5} />
             </div>
@@ -110,39 +117,71 @@ export function DashboardHeader({
                   {user.email}
                 </span>
                 <span
-                  className={`text-[9px] font-extrabold uppercase px-1 py-0.2 border border-[#09090B] ${roleColor}`}
+                  className={`text-[9px] font-extrabold uppercase px-1 py-0.5 border border-[#09090B] ${roleColor}`}
                 >
                   {roleLabel}
                 </span>
               </div>
             </div>
-          </div>
+            <div className="pl-1 border-l border-[#09090B]/30">
+              <ChevronDown
+                className={`w-3.5 h-3.5 text-[#09090B] transition-transform duration-150 ${
+                  isDesktopMenuOpen ? 'rotate-180' : ''
+                }`}
+                strokeWidth={2.5}
+              />
+            </div>
+          </button>
 
-          {/* Change Password Button */}
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={() => setIsChangePasswordOpen(true)}
-            className="cursor-pointer"
-            title="Ganti kata sandi akun Anda"
-          >
-            <Key className="w-3.5 h-3.5 text-[#09090B]" strokeWidth={2.5} />
-            <span>Ganti Password</span>
-          </Button>
+          {/* Desktop Dropdown Popover */}
+          {isDesktopMenuOpen ? (
+            <>
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setIsDesktopMenuOpen(false)}
+              />
+              <div className="absolute right-0 top-full mt-2 w-64 z-50 bg-white border-2 border-[#09090B] shadow-[4px_4px_0_0_#09090B] p-3 space-y-2.5 animate-in fade-in slide-in-from-top-1 duration-100">
+                <div className="p-2.5 bg-[#FAF8F5] border border-[#09090B]">
+                  <div className="text-[10px] font-bold uppercase text-[#52525B]">
+                    Masuk Sebagai
+                  </div>
+                  <div className="font-extrabold text-xs text-[#09090B] truncate mt-0.5">
+                    {user.name || 'Pengguna'}
+                  </div>
+                  <div className="font-mono text-[10px] text-[#52525B] truncate">
+                    {user.email}
+                  </div>
+                </div>
 
-          {/* Logout Button */}
-          <Button
-            type="button"
-            variant="danger"
-            size="sm"
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-            className="cursor-pointer"
-          >
-            <LogOut className="w-3.5 h-3.5" strokeWidth={2.5} />
-            <span>{isLoggingOut ? 'Keluar...' : 'Keluar'}</span>
-          </Button>
+                <div className="space-y-1.5 pt-0.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsDesktopMenuOpen(false)
+                      setIsChangePasswordOpen(true)
+                    }}
+                    className="w-full px-3 py-2 text-xs font-bold border-2 border-[#09090B] bg-white hover:bg-[#FAF8F5] active:translate-x-0.5 active:translate-y-0.5 shadow-[2px_2px_0_0_#09090B] flex items-center gap-2 cursor-pointer transition-all"
+                  >
+                    <Key className="w-3.5 h-3.5 text-[#09090B]" strokeWidth={2.5} />
+                    <span>Ganti Password</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsDesktopMenuOpen(false)
+                      handleLogout()
+                    }}
+                    disabled={isLoggingOut}
+                    className="w-full px-3 py-2 text-xs font-bold border-2 border-[#09090B] bg-[#FECDD3] hover:bg-[#FDA4AF] active:translate-x-0.5 active:translate-y-0.5 shadow-[2px_2px_0_0_#09090B] flex items-center gap-2 cursor-pointer transition-all disabled:opacity-50"
+                  >
+                    <LogOut className="w-3.5 h-3.5 text-[#09090B]" strokeWidth={2.5} />
+                    <span>{isLoggingOut ? 'Keluar...' : 'Keluar'}</span>
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : null}
         </div>
 
         {/* Mobile Controls (hidden on desktop) */}

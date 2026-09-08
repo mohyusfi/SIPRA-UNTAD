@@ -75,9 +75,9 @@ export function PublicNavbar({
             <Radio className="w-5 h-5 text-[#09090B]" strokeWidth={2.5} />
           </div>
           <div>
-            <h1 className="font-extrabold text-lg md:text-xl tracking-tight text-[#09090B] leading-none">
+            <span className="font-extrabold text-lg md:text-xl tracking-tight text-[#09090B] leading-none">
               SIPRA-UNTAD
-            </h1>
+            </span>
             <p className="hidden sm:block text-[10px] uppercase font-bold text-[#52525B] tracking-wider mt-0.5">
               {subtitle}
             </p>

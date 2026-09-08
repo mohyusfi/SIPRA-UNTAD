@@ -261,11 +261,11 @@ export function MasterDataManagement({
   return (
     <div className="space-y-6">
       {/* Subtab Toggle Buttons */}
-      <div className="flex items-center gap-2 border-b-2 border-[#09090B] pb-3">
+      <div className="flex items-center gap-2 border-b-2 border-[#09090B] pt-1 pb-2.5 overflow-x-auto scrollbar-none sm:flex-wrap">
         <button
           type="button"
           onClick={() => setActiveSubTab('categories')}
-          className={`flex items-center gap-2 px-4 py-2 border-2 border-[#09090B] text-xs md:text-sm font-extrabold cursor-pointer transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 border-2 border-[#09090B] text-xs md:text-sm font-extrabold cursor-pointer transition-all shrink-0 whitespace-nowrap touch-manipulation select-none ${
             activeSubTab === 'categories'
               ? 'bg-[#BAE6FD] shadow-[4px_4px_0_0_#09090B] translate-x-[-2px] translate-y-[-2px]'
               : 'bg-white hover:bg-[#FAF8F5]'
@@ -278,7 +278,7 @@ export function MasterDataManagement({
         <button
           type="button"
           onClick={() => setActiveSubTab('locations')}
-          className={`flex items-center gap-2 px-4 py-2 border-2 border-[#09090B] text-xs md:text-sm font-extrabold cursor-pointer transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 border-2 border-[#09090B] text-xs md:text-sm font-extrabold cursor-pointer transition-all shrink-0 whitespace-nowrap touch-manipulation select-none ${
             activeSubTab === 'locations'
               ? 'bg-[#FEF08A] shadow-[4px_4px_0_0_#09090B] translate-x-[-2px] translate-y-[-2px]'
               : 'bg-white hover:bg-[#FAF8F5]'
