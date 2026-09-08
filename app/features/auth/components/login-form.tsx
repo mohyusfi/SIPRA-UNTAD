@@ -81,10 +81,27 @@ export function LoginForm({
       }
 
       if (data) {
-        setSuccessMsg('Login berhasil! Mengalihkan...')
-        setTimeout(() => {
-          navigate({ to: redirectUrl as any })
-        }, 300)
+        setSuccessMsg('Login berhasil! Mengalihkan ke dashboard...')
+        const role = (data.user as any)?.role || 'reporter'
+        let targetUrl = redirectUrl
+        if (!redirectUrl || redirectUrl === '/dashboard') {
+          switch (role) {
+            case 'admin':
+              targetUrl = '/dashboard/admin'
+              break
+            case 'technician':
+              targetUrl = '/dashboard/technician'
+              break
+            case 'monitor':
+              targetUrl = '/dashboard/monitor'
+              break
+            case 'reporter':
+            default:
+              targetUrl = '/dashboard/reporter'
+              break
+          }
+        }
+        window.location.href = targetUrl
       }
     } catch (err: unknown) {
       const message =

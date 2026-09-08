@@ -8,7 +8,8 @@ export async function getSessionFromServer() {
       headers: headers as any,
     })
     return session
-  } catch {
+  } catch (err) {
+    console.error('[getSessionFromServer Error]:', err)
     return null
   }
 }
