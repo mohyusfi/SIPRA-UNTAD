@@ -79,7 +79,36 @@ export function PublicNavbar({
           </div>
         </Link>
 
-        {/* Action Buttons (Desktop Only - Mobile actions handled by BottomNav) */}
+        {/* Mobile Quick Action Button */}
+        <div className="flex md:hidden items-center gap-2">
+          {isTrackPage ? (
+            <Link
+              to="/"
+              className="px-2.5 py-1.5 font-bold text-xs bg-white text-[#09090B] border-2 border-[#09090B] shadow-[2px_2px_0_0_#09090B] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all flex items-center gap-1 cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.5} />
+              <span>Beranda</span>
+            </Link>
+          ) : user ? (
+            <Link
+              to="/dashboard"
+              className="px-2.5 py-1.5 font-bold text-xs bg-[#D9F99D] text-[#09090B] border-2 border-[#09090B] shadow-[2px_2px_0_0_#09090B] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <LayoutDashboard className="w-3.5 h-3.5" strokeWidth={2.5} />
+              <span>Dashboard</span>
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              className="px-2.5 py-1.5 font-bold text-xs bg-[#C4B5FD] text-[#09090B] border-2 border-[#09090B] shadow-[2px_2px_0_0_#09090B] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <LogIn className="w-3.5 h-3.5" strokeWidth={2.5} />
+              <span>Masuk</span>
+            </Link>
+          )}
+        </div>
+
+        {/* Action Buttons (Desktop Only - Mobile actions handled above and by BottomNav) */}
         <div className="hidden md:flex items-center gap-3">
           {isTrackPage ? (
             <Link
