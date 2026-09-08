@@ -534,7 +534,7 @@ function ReporterDashboardPage() {
                   ) : (
                     <>
                       <PlusCircle className="w-4 h-4 text-[#09090B]" strokeWidth={2.5} />
-                      <span>+ Muat 6 Laporan Berikutnya</span>
+                      <span>Muat 6 Laporan Berikutnya</span>
                     </>
                   )}
                 </button>
