@@ -15,10 +15,20 @@ export function BottomNav() {
 
   const handleLaporClick = (e: React.MouseEvent) => {
     e.preventDefault()
+    if (userRole === 'reporter') {
+      navigate({ to: '/dashboard/reporter/new' as any })
+      return
+    }
     if (pathname === '/') {
       const el = document.getElementById('report-form-section')
       if (el) {
-        el.scrollIntoView({ behavior: 'smooth' })
+        try {
+          const yOffset = -24
+          const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset
+          window.scrollTo({ top: y, behavior: 'smooth' })
+        } catch {
+          el.scrollIntoView({ behavior: 'smooth' })
+        }
       }
     } else {
       navigate({ to: '/', hash: 'report-form-section' })
@@ -52,7 +62,7 @@ export function BottomNav() {
         <button
           type="button"
           onClick={handleLaporClick}
-          className="flex flex-col items-center justify-center py-1 px-3 border-2 border-[#09090B] bg-[#D9F99D] shadow-[2px_2px_0_0_#09090B] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all cursor-pointer min-w-[60px]"
+          className="flex flex-col items-center justify-center py-1 px-3 border-2 border-[#09090B] bg-[#D9F99D] shadow-[2px_2px_0_0_#09090B] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all cursor-pointer min-w-[60px] touch-manipulation select-none"
         >
           <PlusCircle className="w-5 h-5 text-[#09090B]" strokeWidth={2.5} />
           <span className="text-[10px] font-extrabold uppercase tracking-tight text-[#09090B] mt-0.5">

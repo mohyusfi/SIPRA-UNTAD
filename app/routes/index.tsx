@@ -21,10 +21,17 @@ export const Route = createFileRoute('/')({
 function HomePage() {
   const data = Route.useLoaderData()
 
-  const scrollToForm = () => {
+  const scrollToForm = (e?: React.MouseEvent) => {
+    e?.preventDefault()
     const el = document.getElementById('report-form-section')
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth' })
+      try {
+        const yOffset = -24
+        const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset
+        window.scrollTo({ top: y, behavior: 'smooth' })
+      } catch {
+        el.scrollIntoView({ behavior: 'smooth' })
+      }
     }
   }
 
@@ -60,7 +67,7 @@ function HomePage() {
               <button
                 type="button"
                 onClick={scrollToForm}
-                className="px-6 py-3 font-bold uppercase tracking-wider text-xs md:text-sm bg-[#D9F99D] text-[#09090B] border-2 border-[#09090B] shadow-[4px_4px_0_0_#09090B] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_#09090B] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="px-6 py-3 font-bold uppercase tracking-wider text-xs md:text-sm bg-[#D9F99D] text-[#09090B] border-2 border-[#09090B] shadow-[4px_4px_0_0_#09090B] md:hover:translate-x-[2px] md:hover:translate-y-[2px] md:hover:shadow-[2px_2px_0_0_#09090B] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#09090B] transition-all flex items-center justify-center gap-2 cursor-pointer touch-manipulation select-none"
               >
                 <span>Buat Laporan Baru</span>
                 <ArrowDown className="w-4 h-4" strokeWidth={2.5} />

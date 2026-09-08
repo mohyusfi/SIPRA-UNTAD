@@ -179,12 +179,13 @@ function ReporterDashboardPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="w-full sm:w-auto shrink-0 mt-2 sm:mt-0">
               <Link
                 to="/dashboard/reporter/new"
-                className="px-4 py-2.5 font-bold text-xs md:text-sm bg-[#D9F99D] text-[#09090B] border-2 border-[#09090B] shadow-[3px_3px_0_0_#09090B] hover:bg-[#BEF264] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0_0_#09090B] transition-all flex items-center gap-2 cursor-pointer"
+                preload="intent"
+                className="w-full sm:w-auto min-h-[44px] px-5 py-3 font-extrabold text-xs md:text-sm bg-[#D9F99D] text-[#09090B] border-2 border-[#09090B] shadow-[3px_3px_0_0_#09090B] md:hover:bg-[#BEF264] md:hover:translate-x-[1px] md:hover:translate-y-[1px] md:hover:shadow-[2px_2px_0_0_#09090B] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[2px_2px_0_0_#09090B] transition-all flex items-center justify-center gap-2 cursor-pointer touch-manipulation select-none"
               >
-                <PlusCircle className="w-4 h-4" strokeWidth={2.5} />
+                <PlusCircle className="w-4 h-4 text-[#09090B]" strokeWidth={2.5} />
                 <span>Buat Laporan Baru</span>
               </Link>
             </div>
@@ -556,8 +557,12 @@ function ReporterDashboardPage() {
                 <p className="text-xs md:text-sm text-[#52525B] max-w-md mx-auto mb-6">
                   Anda belum pernah mengajukan laporan kerusakan fasilitas fisik kampus. Jika menemukan sarana yang rusak, silakan buat laporan sekarang.
                 </p>
-                <Link to="/dashboard/reporter/new">
-                  <Button variant="lime" size="lg">
+                <Link
+                  to="/dashboard/reporter/new"
+                  preload="intent"
+                  className="inline-block touch-manipulation"
+                >
+                  <Button variant="lime" size="lg" className="touch-manipulation">
                     <PlusCircle className="w-4 h-4" strokeWidth={2.5} />
                     <span>Buat Laporan Pertama Anda</span>
                   </Button>

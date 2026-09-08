@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Link, useNavigate, useLocation } from '@tanstack/react-router'
-import { Radio, LogOut, ExternalLink, Shield, Key, CheckCircle2, Menu, X } from 'lucide-react'
+import { Radio, LogOut, ExternalLink, Shield, Key, CheckCircle2, Menu, X, PlusCircle } from 'lucide-react'
 import { authClient } from '~/lib/auth-client'
 import { Button } from '~/components/ui/button'
 import { ChangePasswordModal } from '~/features/auth/components/change-password-modal'
@@ -203,13 +203,25 @@ export function DashboardHeader({
 
               {/* Action Buttons */}
               <div className="space-y-2">
+                {user.role === 'reporter' && (
+                  <Link
+                    to="/dashboard/reporter/new"
+                    preload="intent"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-extrabold border-2 border-[#09090B] bg-[#D9F99D] hover:bg-[#BEF264] shadow-[2px_2px_0_0_#09090B] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer text-[#09090B] text-left transition-all touch-manipulation"
+                  >
+                    <PlusCircle className="w-4 h-4 text-[#09090B]" strokeWidth={2.5} />
+                    <span>Buat Laporan Baru</span>
+                  </Link>
+                )}
+
                 <button
                   type="button"
                   onClick={() => {
                     setIsMobileMenuOpen(false)
                     setIsChangePasswordOpen(true)
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold border-2 border-[#09090B] bg-white hover:bg-[#FAF8F5] shadow-[2px_2px_0_0_#09090B] active:shadow-none cursor-pointer text-[#09090B] text-left transition-all"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold border-2 border-[#09090B] bg-white hover:bg-[#FAF8F5] shadow-[2px_2px_0_0_#09090B] active:shadow-none cursor-pointer text-[#09090B] text-left transition-all touch-manipulation"
                 >
                   <Key className="w-3.5 h-3.5 text-[#09090B]" strokeWidth={2.5} />
                   <span>Ganti Kata Sandi</span>
