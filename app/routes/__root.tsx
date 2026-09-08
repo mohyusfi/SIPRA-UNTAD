@@ -8,6 +8,7 @@ import {
   useRouterState,
 } from '@tanstack/react-router'
 import '../app.css'
+import { name } from 'drizzle-orm';
 
 const SITE_URL = 'https://sipra-untad.vercel.app'
 
@@ -41,6 +42,10 @@ export const Route = createRootRoute({
         name: 'twitter:card',
         content: 'summary',
       },
+      {
+        name: 'google-site-verification',
+        content: 'A8xLPx0mZ-KKhzVfm8w_2v1utlLLL3TK06XGp7N1vj8'
+      }
     ],
     links: [
       {
@@ -74,6 +79,8 @@ export const Route = createRootRoute({
   }),
   component: RootComponent,
 })
+
+
 
 function NavigationProgressBar() {
   const isNavigating = useRouterState({
