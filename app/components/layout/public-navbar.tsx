@@ -14,6 +14,8 @@ export function PublicNavbar({
 }: PublicNavbarProps) {
   const { data: session } = authClient.useSession()
   const user = session?.user
+  const userRole = (user as any)?.role
+  const dashboardPath = userRole ? `/dashboard/${userRole}` : '/dashboard'
 
   return (
     <>
@@ -23,6 +25,7 @@ export function PublicNavbar({
           {isTrackPage ? (
             <Link
               to="/"
+              preload="intent"
               className="flex items-center gap-1 hover:underline cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.5} />
@@ -43,7 +46,8 @@ export function PublicNavbar({
               <span>•</span>
               {user ? (
                 <Link
-                  to="/dashboard"
+                  to={dashboardPath as any}
+                  preload="intent"
                   className="flex items-center gap-1 hover:underline cursor-pointer"
                 >
                   <LayoutDashboard className="w-3.5 h-3.5" strokeWidth={2.5} />
@@ -52,6 +56,7 @@ export function PublicNavbar({
               ) : (
                 <Link
                   to="/login"
+                  preload="intent"
                   className="flex items-center gap-1 hover:underline cursor-pointer"
                 >
                   <LogIn className="w-3.5 h-3.5" strokeWidth={2.5} />
@@ -65,7 +70,7 @@ export function PublicNavbar({
 
       {/* Tier 2: Main Navigation Bar */}
       <nav className="h-16 bg-[#FAF8F5] border-b-2 border-[#09090B] flex items-center justify-between px-4 md:px-8">
-        <Link to="/" className="flex items-center gap-3">
+        <Link to="/" preload="intent" className="flex items-center gap-3">
           <div className="w-10 h-10 border-2 border-[#09090B] bg-[#D9F99D] flex items-center justify-center shadow-[2px_2px_0_0_#09090B]">
             <Radio className="w-5 h-5 text-[#09090B]" strokeWidth={2.5} />
           </div>
@@ -84,6 +89,7 @@ export function PublicNavbar({
           {isTrackPage ? (
             <Link
               to="/"
+              preload="intent"
               className="px-2.5 py-1.5 font-bold text-xs bg-white text-[#09090B] border-2 border-[#09090B] shadow-[2px_2px_0_0_#09090B] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all flex items-center gap-1 cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.5} />
@@ -91,7 +97,8 @@ export function PublicNavbar({
             </Link>
           ) : user ? (
             <Link
-              to="/dashboard"
+              to={dashboardPath as any}
+              preload="intent"
               className="px-2.5 py-1.5 font-bold text-xs bg-[#D9F99D] text-[#09090B] border-2 border-[#09090B] shadow-[2px_2px_0_0_#09090B] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <LayoutDashboard className="w-3.5 h-3.5" strokeWidth={2.5} />
@@ -100,6 +107,7 @@ export function PublicNavbar({
           ) : (
             <Link
               to="/login"
+              preload="intent"
               className="px-2.5 py-1.5 font-bold text-xs bg-[#C4B5FD] text-[#09090B] border-2 border-[#09090B] shadow-[2px_2px_0_0_#09090B] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <LogIn className="w-3.5 h-3.5" strokeWidth={2.5} />
@@ -113,6 +121,7 @@ export function PublicNavbar({
           {isTrackPage ? (
             <Link
               to="/"
+              preload="intent"
               className="px-4 py-2 font-bold text-xs md:text-sm bg-white text-[#09090B] border-2 border-[#09090B] shadow-[3px_3px_0_0_#09090B] hover:bg-neutral-100 hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0_0_#09090B] transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <span>Buat Laporan Baru</span>
@@ -121,6 +130,7 @@ export function PublicNavbar({
             <>
               <Link
                 to="/track"
+                preload="intent"
                 className="px-4 py-2 font-bold text-xs md:text-sm bg-white text-[#09090B] border-2 border-[#09090B] shadow-[3px_3px_0_0_#09090B] hover:bg-neutral-100 hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0_0_#09090B] transition-all flex items-center gap-1.5 cursor-pointer"
               >
                 <Search className="w-4 h-4" strokeWidth={2.5} />
@@ -129,7 +139,8 @@ export function PublicNavbar({
 
               {user ? (
                 <Link
-                  to="/dashboard"
+                  to={dashboardPath as any}
+                  preload="intent"
                   className="px-4 py-2 font-bold text-xs md:text-sm bg-[#D9F99D] text-[#09090B] border-2 border-[#09090B] shadow-[3px_3px_0_0_#09090B] hover:bg-[#BEF264] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0_0_#09090B] transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <LayoutDashboard className="w-4 h-4" strokeWidth={2.5} />
@@ -138,6 +149,7 @@ export function PublicNavbar({
               ) : (
                 <Link
                   to="/login"
+                  preload="intent"
                   className="px-4 py-2 font-bold text-xs md:text-sm bg-[#C4B5FD] text-[#09090B] border-2 border-[#09090B] shadow-[3px_3px_0_0_#09090B] hover:bg-[#A78BFA] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0_0_#09090B] transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <LogIn className="w-4 h-4" strokeWidth={2.5} />

@@ -4,6 +4,7 @@ import {
   createRootRoute,
   HeadContent,
   Scripts,
+  useRouterState,
 } from '@tanstack/react-router'
 import '../app.css'
 
@@ -40,6 +41,20 @@ export const Route = createRootRoute({
   component: RootComponent,
 })
 
+function NavigationProgressBar() {
+  const isNavigating = useRouterState({
+    select: (state: { status?: string }) => state.status === 'pending',
+  })
+
+  if (!isNavigating) return null
+
+  return (
+    <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-[#09090B]">
+      <div className="h-full bg-[#D9F99D] animate-pulse w-full" />
+    </div>
+  )
+}
+
 function RootComponent() {
   return (
     <RootDocument>
@@ -55,6 +70,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
         <HeadContent />
       </head>
       <body className="bg-[#DDD6FE] text-[#09090B] min-h-screen antialiased">
+        <NavigationProgressBar />
         {children}
         <Scripts />
       </body>

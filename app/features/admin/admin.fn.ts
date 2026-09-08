@@ -4,7 +4,7 @@ import { eq, desc, and, or, ilike } from 'drizzle-orm'
 import { db } from '~/db'
 import { reports, reportTimeline, user } from '~/db/schema'
 import { getCurrentUserSession } from '~/lib/auth-server'
-import { supabase } from '~/lib/supabase'
+import { getBatchSignedUrls } from '~/lib/supabase'
 
 async function requireAdminSession() {
   const session = await getCurrentUserSession()
@@ -134,21 +134,17 @@ export const getAdminReportDetail = createServerFn({ method: 'GET' })
       throw new Error('Laporan tidak ditemukan.')
     }
 
-    const photosWithSignedUrls = await Promise.all(
-      report.photos.map(async (p) => {
-        const { data: signed } = await supabase.storage
-          .from('report-attachments')
-          .createSignedUrl(p.fileKey, 3600)
-
-        return {
-          id: p.id,
-          fileKey: p.fileKey,
-          photoType: p.photoType,
-          url: signed?.signedUrl || '',
-          createdAt: p.createdAt,
-        }
-      }),
+    const signedUrlsMap = await getBatchSignedUrls(
+      report.photos.map((p) => p.fileKey),
     )
+
+    const photosWithSignedUrls = report.photos.map((p) => ({
+      id: p.id,
+      fileKey: p.fileKey,
+      photoType: p.photoType,
+      url: signedUrlsMap.get(p.fileKey) || '',
+      createdAt: p.createdAt,
+    }))
 
     return {
       id: report.id,

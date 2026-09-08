@@ -10,6 +10,8 @@ export function BottomNav() {
   const pathname = location.pathname
   const { data: session } = authClient.useSession()
   const user = session?.user
+  const userRole = (user as any)?.role
+  const dashboardPath = userRole ? `/dashboard/${userRole}` : '/dashboard'
 
   const handleLaporClick = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -33,6 +35,7 @@ export function BottomNav() {
       <div className="flex items-center justify-around max-w-md mx-auto">
         <Link
           to="/"
+          preload="intent"
           className={cn(
             'flex flex-col items-center justify-center py-1 px-3 border-2 border-transparent transition-all cursor-pointer min-w-[60px]',
             isHome
@@ -59,6 +62,7 @@ export function BottomNav() {
 
         <Link
           to="/track"
+          preload="intent"
           className={cn(
             'flex flex-col items-center justify-center py-1 px-3 border-2 border-transparent transition-all cursor-pointer min-w-[60px]',
             isTrack
@@ -74,7 +78,8 @@ export function BottomNav() {
 
         {user ? (
           <Link
-            to="/dashboard"
+            to={dashboardPath as any}
+            preload="intent"
             className={cn(
               'flex flex-col items-center justify-center py-1 px-3 border-2 border-transparent transition-all cursor-pointer min-w-[60px]',
               isDashboard
@@ -90,6 +95,7 @@ export function BottomNav() {
         ) : (
           <Link
             to="/login"
+            preload="intent"
             className={cn(
               'flex flex-col items-center justify-center py-1 px-3 border-2 border-transparent transition-all cursor-pointer min-w-[60px]',
               isLogin

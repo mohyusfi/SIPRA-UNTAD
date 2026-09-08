@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { eq, desc } from 'drizzle-orm'
 import { db } from '~/db'
 import { categories, locations, reports, reportPhotos, reportTimeline } from '~/db/schema'
-import { supabase } from '~/lib/supabase'
+import { supabase, getBatchSignedUrls } from '~/lib/supabase'
 import { generateTrackingCode } from '~/lib/utils'
 import { getCurrentUserSession } from '~/lib/auth-server'
 
@@ -213,21 +213,17 @@ export const getReportByTrackingCode = createServerFn({ method: 'GET' })
       return null
     }
 
-    const photosWithUrls = await Promise.all(
-      report.photos.map(async (p) => {
-        const { data: signed } = await supabase.storage
-          .from('report-attachments')
-          .createSignedUrl(p.fileKey, 3600)
-
-        return {
-          id: p.id,
-          photoType: p.photoType,
-          fileKey: p.fileKey,
-          url: signed?.signedUrl || '',
-          createdAt: p.createdAt,
-        }
-      }),
+    const signedUrlsMap = await getBatchSignedUrls(
+      report.photos.map((p) => p.fileKey),
     )
+
+    const photosWithUrls = report.photos.map((p) => ({
+      id: p.id,
+      photoType: p.photoType,
+      fileKey: p.fileKey,
+      url: signedUrlsMap.get(p.fileKey) || '',
+      createdAt: p.createdAt,
+    }))
 
     return {
       id: report.id,
@@ -304,60 +300,53 @@ export const getReporterDashboardData = createServerFn({ method: 'GET' }).handle
       }
     }
 
-    const formattedReports = await Promise.all(
-      userReports.map(async (r) => {
-        const photosWithUrls = await Promise.all(
-          r.photos.map(async (p) => {
-            const { data: signed } = await supabase.storage
-              .from('report-attachments')
-              .createSignedUrl(p.fileKey, 3600)
+    const allFileKeys = userReports.flatMap((r) => r.photos.map((p) => p.fileKey))
+    const signedUrlsMap = await getBatchSignedUrls(allFileKeys)
 
-            return {
-              id: p.id,
-              photoType: p.photoType,
-              fileKey: p.fileKey,
-              url: signed?.signedUrl || '',
-              createdAt: p.createdAt,
+    const formattedReports = userReports.map((r) => {
+      const photosWithUrls = r.photos.map((p) => ({
+        id: p.id,
+        photoType: p.photoType,
+        fileKey: p.fileKey,
+        url: signedUrlsMap.get(p.fileKey) || '',
+        createdAt: p.createdAt,
+      }))
+
+      return {
+        id: r.id,
+        trackingCode: r.trackingCode,
+        title: r.title,
+        descriptionText: r.descriptionText,
+        descriptionJson: r.descriptionJson,
+        urgency: r.urgency,
+        status: r.status,
+        isAnonymous: r.isAnonymous,
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
+        locationDetail: r.locationDetail,
+        category: r.category
+          ? { id: r.category.id, name: r.category.name }
+          : null,
+        location: r.location
+          ? {
+              id: r.location.id,
+              campus: r.location.campus,
+              building: r.location.building,
+              floor: r.location.floor,
+              roomOrArea: r.location.roomOrArea,
             }
-          }),
-        )
-
-        return {
-          id: r.id,
-          trackingCode: r.trackingCode,
-          title: r.title,
-          descriptionText: r.descriptionText,
-          descriptionJson: r.descriptionJson,
-          urgency: r.urgency,
-          status: r.status,
-          isAnonymous: r.isAnonymous,
-          createdAt: r.createdAt,
-          updatedAt: r.updatedAt,
-          locationDetail: r.locationDetail,
-          category: r.category
-            ? { id: r.category.id, name: r.category.name }
-            : null,
-          location: r.location
-            ? {
-                id: r.location.id,
-                campus: r.location.campus,
-                building: r.location.building,
-                floor: r.location.floor,
-                roomOrArea: r.location.roomOrArea,
-              }
-            : null,
-          photos: photosWithUrls,
-          timeline: r.timeline.map((t) => ({
-            id: t.id,
-            action: t.action,
-            fromStatus: t.fromStatus,
-            toStatus: t.toStatus,
-            notes: t.notes,
-            createdAt: t.createdAt,
-          })),
-        }
-      }),
-    )
+          : null,
+        photos: photosWithUrls,
+        timeline: r.timeline.map((t) => ({
+          id: t.id,
+          action: t.action,
+          fromStatus: t.fromStatus,
+          toStatus: t.toStatus,
+          notes: t.notes,
+          createdAt: t.createdAt,
+        })),
+      }
+    })
 
     return {
       stats: {

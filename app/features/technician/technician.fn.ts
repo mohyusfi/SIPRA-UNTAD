@@ -4,7 +4,7 @@ import { eq, desc } from 'drizzle-orm'
 import { db } from '~/db'
 import { reports, reportPhotos, reportTimeline } from '~/db/schema'
 import { getCurrentUserSession } from '~/lib/auth-server'
-import { supabase } from '~/lib/supabase'
+import { supabase, getBatchSignedUrls } from '~/lib/supabase'
 
 async function requireTechnicianSession() {
   const session = await getCurrentUserSession()
@@ -66,23 +66,17 @@ export const getTechnicianTasks = createServerFn({ method: 'GET' })
       )
     }
 
-    const tasksWithUrls = await Promise.all(
-      filtered.map(async (r) => {
-        const photosWithUrls = await Promise.all(
-          r.photos.map(async (p) => {
-            const { data: signed } = await supabase.storage
-              .from('report-attachments')
-              .createSignedUrl(p.fileKey, 3600)
+    const allFileKeys = filtered.flatMap((r) => r.photos.map((p) => p.fileKey))
+    const signedUrlsMap = await getBatchSignedUrls(allFileKeys)
 
-            return {
-              id: p.id,
-              photoType: p.photoType,
-              fileKey: p.fileKey,
-              url: signed?.signedUrl || '',
-              createdAt: p.createdAt,
-            }
-          }),
-        )
+    const tasksWithUrls = filtered.map((r) => {
+      const photosWithUrls = r.photos.map((p) => ({
+        id: p.id,
+        photoType: p.photoType,
+        fileKey: p.fileKey,
+        url: signedUrlsMap.get(p.fileKey) || '',
+        createdAt: p.createdAt,
+      }))
 
         return {
           id: r.id,
@@ -108,8 +102,7 @@ export const getTechnicianTasks = createServerFn({ method: 'GET' })
             createdAt: t.createdAt,
           })),
         }
-      }),
-    )
+      })
 
     return {
       stats,
