@@ -42,6 +42,14 @@ export function DashboardHeader({
           <span>Panel Operasional Kampus</span>
         </div>
         <div className="flex items-center gap-3">
+          {user.role === 'admin' && (
+            <Link
+              to="/dashboard/monitor"
+              className="hover:underline flex items-center gap-1 cursor-pointer font-bold border-r border-[#09090B] pr-3"
+            >
+              <span>Panel Eksekutif (Pemantau)</span>
+            </Link>
+          )}
           <Link
             to="/"
             className="hover:underline flex items-center gap-1 cursor-pointer"
