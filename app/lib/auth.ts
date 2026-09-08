@@ -6,17 +6,33 @@ import { eq } from 'drizzle-orm'
 import { db } from '~/db'
 import * as schema from '~/db/schema'
 
+const getBaseURL = () => {
+  if (process.env.BETTER_AUTH_URL && !process.env.BETTER_AUTH_URL.includes('localhost')) {
+    return process.env.BETTER_AUTH_URL
+  }
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL && process.env.VERCEL_ENV === 'production') {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`
+  }
+  return process.env.BETTER_AUTH_URL || 'http://localhost:3000'
+}
+
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: 'pg',
     schema,
   }),
-  baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
+  baseURL: getBaseURL(),
   trustedOrigins: [
     'http://localhost:3000',
     'http://localhost:3001',
     'http://localhost:5173',
-  ],
+    'https://*.vercel.app',
+    'https://sipra-untad.vercel.app',
+    process.env.BETTER_AUTH_URL || '',
+  ].filter(Boolean),
   secret: process.env.BETTER_AUTH_SECRET,
   emailAndPassword: {
     enabled: true,
