@@ -5,6 +5,7 @@ import {
   type UploadedPhoto,
 } from '~/features/reports/components/photo-uploader'
 import { completeTaskAction } from '../technician.fn'
+import { formatErrorMessage } from '~/lib/utils'
 
 export interface TechnicianTaskSummary {
   id: string
@@ -70,8 +71,13 @@ export function CompletionModal({
       })
       onSuccess()
       onClose()
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Terjadi kesalahan saat menyimpan bukti perbaikan.')
+    } catch (err: unknown) {
+      setErrorMessage(
+        formatErrorMessage(
+          err,
+          'Terjadi kesalahan saat menyimpan bukti perbaikan.',
+        ),
+      )
     } finally {
       setIsSubmitting(false)
     }

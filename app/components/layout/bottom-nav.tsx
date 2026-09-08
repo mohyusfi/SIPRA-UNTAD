@@ -50,10 +50,10 @@ export function BottomNav() {
             'flex flex-col items-center justify-center py-1 px-3 border-2 border-transparent transition-all cursor-pointer min-w-15',
             isHome
               ? 'border-ink-primary bg-brand-lilac shadow-[2px_2px_0_0_#09090B]'
-              : 'hover:bg-neutral-100 text-[#52525B]',
+              : 'hover:bg-neutral-100 text-ink-muted',
           )}
         >
-          <Home className="w-5 h-5 text-[#09090B]" strokeWidth={2.5} />
+          <Home className="w-5 h-5 text-ink-primary" strokeWidth={2.5} />
           <span className="text-[10px] font-extrabold uppercase tracking-tight text-[#09090B] mt-0.5">
             Beranda
           </span>

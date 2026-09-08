@@ -179,7 +179,7 @@ export const getAdminInitialData = createServerFn({ method: 'GET' })
   })
 
 const reportIdSchema = z.object({
-  id: z.string().min(1),
+  id: z.string().min(1, 'ID laporan wajib diisi'),
 })
 
 export const getAdminReportDetail = createServerFn({ method: 'GET' })
@@ -277,7 +277,7 @@ export const getAvailableTechnicians = createServerFn({ method: 'GET' }).handler
 )
 
 const verifyReportSchema = z.object({
-  reportId: z.string().min(1),
+  reportId: z.string().min(1, 'ID laporan wajib diisi'),
   urgency: z.enum(['normal', 'high', 'emergency']).optional(),
 })
 
@@ -322,7 +322,7 @@ export const verifyReportAction = createServerFn({ method: 'POST' })
   })
 
 const rejectReportSchema = z.object({
-  reportId: z.string().min(1),
+  reportId: z.string().min(1, 'ID laporan wajib diisi'),
   reason: z.string().min(5, 'Alasan penolakan minimal 5 karakter'),
 })
 
@@ -363,7 +363,7 @@ export const rejectReportAction = createServerFn({ method: 'POST' })
   })
 
 const markDuplicateSchema = z.object({
-  reportId: z.string().min(1),
+  reportId: z.string().min(1, 'ID laporan wajib diisi'),
   duplicateOfId: z.string().min(1, 'Laporan rujukan wajib dipilih'),
   reason: z.string().min(5, 'Catatan duplikat minimal 5 karakter'),
 })
@@ -408,7 +408,7 @@ export const markDuplicateReportAction = createServerFn({ method: 'POST' })
   })
 
 const assignTechnicianSchema = z.object({
-  reportId: z.string().min(1),
+  reportId: z.string().min(1, 'ID laporan wajib diisi'),
   technicianId: z.string().min(1, 'Teknisi penanggung jawab wajib dipilih'),
   notes: z.string().optional(),
 })
@@ -458,7 +458,7 @@ export const assignTechnicianAction = createServerFn({ method: 'POST' })
   })
 
 const reviewCompletionSchema = z.object({
-  reportId: z.string().min(1),
+  reportId: z.string().min(1, 'ID laporan wajib diisi'),
   decision: z.enum(['approve', 'return']),
   feedback: z.string().optional(),
 })

@@ -7,7 +7,6 @@ import {
   CheckCircle,
   Search,
   RotateCcw,
-  Check,
   AlertTriangle,
 } from 'lucide-react'
 import { getCurrentUserSession } from '~/lib/auth-server'
@@ -24,6 +23,8 @@ import {
 import {
   CompletionModal,
 } from '~/features/technician/components/completion-modal'
+import { formatErrorMessage } from '~/lib/utils'
+import { NeoToast, type ToastData } from '~/components/ui/neo-toast'
 
 export const Route = createFileRoute('/dashboard/technician')({
   beforeLoad: async () => {
@@ -77,12 +78,12 @@ function TechnicianDashboardPage() {
 
   const [startingTaskId, setStartingTaskId] = React.useState<string | null>(null)
   const [completionTask, setCompletionTask] = React.useState<TechnicianTaskItem | null>(null)
-  const [successToast, setSuccessToast] = React.useState<string | null>(null)
+  const [toast, setToast] = React.useState<ToastData | null>(null)
 
-  const showToast = (message: string) => {
-    setSuccessToast(message)
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type })
     setTimeout(() => {
-      setSuccessToast(null)
+      setToast(null)
     }, 4000)
   }
 
@@ -138,8 +139,8 @@ function TechnicianDashboardPage() {
       await startTaskAction({ data: { reportId: taskId } })
       showToast('Pengerjaan perbaikan telah dimulai. Status kini Dalam Pengerjaan.')
       await reloadData()
-    } catch (err: any) {
-      alert(err.message || 'Gagal memulai pengerjaan tugas.')
+    } catch (err: unknown) {
+      showToast(formatErrorMessage(err, 'Gagal memulai pengerjaan tugas.'), 'error')
     } finally {
       setStartingTaskId(null)
     }
@@ -162,15 +163,9 @@ function TechnicianDashboardPage() {
         roleColor="bg-[#FED7AA]"
       />
 
-      {/* Success Notification Toast */}
-      {successToast && (
-        <div className="fixed top-20 right-4 z-50 flex items-center gap-2 border-2 border-[#09090B] bg-[#D9F99D] px-4 py-3 shadow-[4px_4px_0_0_#09090B] animate-bounce">
-          <Check className="w-5 h-5 text-[#09090B]" />
-          <span className="text-xs md:text-sm font-extrabold text-[#09090B]">
-            {successToast}
-          </span>
-        </div>
-      )}
+      {toast ? (
+        <NeoToast toast={toast} onClose={() => setToast(null)} />
+      ) : null}
 
       <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
         {/* Banner Section */}

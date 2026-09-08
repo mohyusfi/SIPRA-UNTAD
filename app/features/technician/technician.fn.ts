@@ -126,7 +126,7 @@ export const getTechnicianTasks = createServerFn({ method: 'GET' })
   })
 
 const startTaskSchema = z.object({
-  reportId: z.string().min(1),
+  reportId: z.string().min(1, 'ID penugasan laporan wajib diisi'),
 })
 
 export const startTaskAction = createServerFn({ method: 'POST' })
@@ -174,7 +174,7 @@ export const startTaskAction = createServerFn({ method: 'POST' })
   })
 
 const completeTaskSchema = z.object({
-  reportId: z.string().min(1),
+  reportId: z.string().min(1, 'ID penugasan laporan wajib diisi'),
   notes: z.string().min(5, 'Catatan perbaikan teknis minimal 5 karakter'),
   photos: z
     .array(

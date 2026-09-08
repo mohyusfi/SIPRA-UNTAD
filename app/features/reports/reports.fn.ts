@@ -185,7 +185,11 @@ export const submitReport = createServerFn({ method: 'POST' })
   })
 
 const getReportInputSchema = z.object({
-  trackingCode: z.string().min(5),
+  trackingCode: z
+    .string()
+    .min(1, 'Kode pelacakan wajib diisi')
+    .min(5, 'Kode pelacakan minimal 5 karakter')
+    .max(30, 'Kode pelacakan maksimal 30 karakter'),
 })
 
 export const getReportByTrackingCode = createServerFn({ method: 'GET' })

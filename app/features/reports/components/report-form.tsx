@@ -19,7 +19,7 @@ import {
 } from './location-cascading-select'
 import { SuccessTicketModal } from './success-ticket-modal'
 import { submitReport } from '../reports.fn'
-import { cn } from '~/lib/utils'
+import { cn, formatErrorMessage } from '~/lib/utils'
 import { authClient } from '~/lib/auth-client'
 
 interface CategoryItem {
@@ -148,9 +148,12 @@ export function ReportForm({ categories, locations }: ReportFormProps) {
         setFormError(res.error || 'Pengajuan gagal diproses oleh server.')
       }
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'Terjadi kesalahan sistem.'
-      setFormError(message)
+      setFormError(
+        formatErrorMessage(
+          err,
+          'Terjadi kesalahan sistem saat mengirim laporan.',
+        ),
+      )
     } finally {
       setLoading(false)
     }
@@ -457,12 +460,12 @@ export function ReportForm({ categories, locations }: ReportFormProps) {
         </div>
 
         {/* Form Error Banner */}
-        {formError && (
+        {formError ? (
           <div className="p-3 border-2 border-[#09090B] bg-[#FECDD3] flex items-center gap-2 text-xs font-bold text-[#09090B] shadow-[2px_2px_0_0_#09090B]">
             <AlertTriangle className="w-4 h-4 shrink-0 text-[#09090B]" strokeWidth={2.5} />
             <span>{formError}</span>
           </div>
-        )}
+        ) : null}
 
         {/* Submit Button */}
         <div className="pt-2">

@@ -12,6 +12,7 @@ import {
 import { z } from 'zod'
 import { authClient } from '~/lib/auth-client'
 import { Button } from '~/components/ui/button'
+import { formatErrorMessage } from '~/lib/utils'
 
 const registerSchema = z
   .object({
@@ -72,7 +73,10 @@ export function RegisterForm() {
 
       if (error) {
         setGlobalError(
-          error.message || 'Gagal mendaftar akun. Kemungkinan email sudah digunakan.',
+          formatErrorMessage(
+            error.message,
+            'Gagal mendaftar akun. Kemungkinan email sudah digunakan.',
+          ),
         )
         setIsLoading(false)
         return
@@ -85,11 +89,12 @@ export function RegisterForm() {
         }, 500)
       }
     } catch (err: unknown) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : 'Terjadi kesalahan sistem saat pendaftaran akun.'
-      setGlobalError(message)
+      setGlobalError(
+        formatErrorMessage(
+          err,
+          'Terjadi kesalahan sistem saat pendaftaran akun.',
+        ),
+      )
       setIsLoading(false)
     }
   }

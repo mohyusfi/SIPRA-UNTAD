@@ -34,7 +34,7 @@ export const Route = createFileRoute('/dashboard/')({
 function DashboardRedirector() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#DDD6FE]">
-      <div className="p-6 bg-white border-2 border-[#09090B] shadow-[4px_4px_0_0_#09090B] text-center">
+      <div className="p-6 bg-white border-2 border-[#09090B] shadow-neo text-center">
         <div className="text-sm font-bold text-[#09090B]">
           Mengarahkan ke dashboard peran Anda...
         </div>

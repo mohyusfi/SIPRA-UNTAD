@@ -12,7 +12,7 @@ import {
   AlertCircle,
 } from 'lucide-react'
 import { Button } from '~/components/ui/button'
-import { formatDate } from '~/lib/utils'
+import { formatDate, formatErrorMessage } from '~/lib/utils'
 import {
   createCategoryAction,
   updateCategoryAction,
@@ -42,7 +42,7 @@ export interface LocationItem {
 interface MasterDataManagementProps {
   initialCategories: CategoryItem[]
   initialLocations: LocationItem[]
-  onNotify: (msg: string) => void
+  onNotify: (msg: string, type?: 'success' | 'error') => void
 }
 
 export function MasterDataManagement({
@@ -98,7 +98,7 @@ export function MasterDataManagement({
       setNewCategoryName('')
       onNotify(`Kategori "${added.name}" berhasil ditambahkan ke sistem.`)
     } catch (err: unknown) {
-      setCategoryError(err instanceof Error ? err.message : 'Gagal menambahkan kategori.')
+      setCategoryError(formatErrorMessage(err, 'Gagal menambahkan kategori.'))
     } finally {
       setIsAddingCategory(false)
     }
@@ -122,7 +122,7 @@ export function MasterDataManagement({
       setEditingCategoryId(null)
       onNotify(`Nama kategori diperbarui menjadi "${updated.name}".`)
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Gagal memperbarui kategori.')
+      onNotify(formatErrorMessage(err, 'Gagal memperbarui kategori.'), 'error')
     }
   }
 
@@ -147,7 +147,7 @@ export function MasterDataManagement({
           : `Kategori "${cat.name}" berhasil diaktifkan kembali.`,
       )
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Gagal mengubah status arsip.')
+      onNotify(formatErrorMessage(err, 'Gagal mengubah status arsip.'), 'error')
     }
   }
 
@@ -173,7 +173,7 @@ export function MasterDataManagement({
       setNewRoomOrArea('')
       onNotify(`Lokasi gedung "${added.building}" berhasil ditambahkan.`)
     } catch (err: unknown) {
-      setLocationError(err instanceof Error ? err.message : 'Gagal menambahkan lokasi.')
+      setLocationError(formatErrorMessage(err, 'Gagal menambahkan lokasi.'))
     } finally {
       setIsAddingLocation(false)
     }
@@ -208,7 +208,7 @@ export function MasterDataManagement({
       setEditingLocation(null)
       onNotify(`Data lokasi "${updated.building}" berhasil diperbarui.`)
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Gagal memperbarui lokasi.')
+      onNotify(formatErrorMessage(err, 'Gagal memperbarui lokasi.'), 'error')
     } finally {
       setIsUpdatingLocation(false)
     }
@@ -235,7 +235,7 @@ export function MasterDataManagement({
           : `Lokasi "${loc.building}" berhasil diaktifkan kembali.`,
       )
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Gagal mengubah status arsip lokasi.')
+      onNotify(formatErrorMessage(err, 'Gagal mengubah status arsip lokasi.'), 'error')
     }
   }
 

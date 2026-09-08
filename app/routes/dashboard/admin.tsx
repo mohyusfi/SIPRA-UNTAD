@@ -6,7 +6,6 @@ import {
   Search,
   AlertCircle,
   Eye,
-  CheckCircle,
   MapPin,
   User,
   Wrench,
@@ -19,20 +18,17 @@ import { getCurrentUserSession } from '~/lib/auth-server'
 import { DashboardHeader } from '~/features/dashboard/components/dashboard-header'
 import { Button } from '~/components/ui/button'
 import { Pagination } from '~/components/ui/pagination'
-import { formatDate } from '~/lib/utils'
+import { formatDate, formatErrorMessage } from '~/lib/utils'
+import { NeoToast, type ToastData } from '~/components/ui/neo-toast'
 import {
   getAdminInitialData,
   getAdminReports,
   getAdminReportDetail,
-  getAvailableTechnicians,
   verifyReportAction,
   rejectReportAction,
   markDuplicateReportAction,
   assignTechnicianAction,
   reviewCompletionAction,
-  getAdminCategories,
-  getAdminLocations,
-  getAdminStaffUsers,
 } from '~/features/admin/admin.fn'
 import {
   ReportStatusBadge,
@@ -135,12 +131,12 @@ function AdminDashboardPage() {
   >(null)
   const [activeReport, setActiveReport] = React.useState<any | null>(null)
   const [isActionLoading, setIsActionLoading] = React.useState(false)
-  const [successToast, setSuccessToast] = React.useState<string | null>(null)
+  const [toast, setToast] = React.useState<ToastData | null>(null)
 
-  const showToast = (message: string) => {
-    setSuccessToast(message)
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type })
     setTimeout(() => {
-      setSuccessToast(null)
+      setToast(null)
     }, 4000)
   }
 
@@ -253,7 +249,7 @@ function AdminDashboardPage() {
       await reloadData()
       await router.invalidate()
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Gagal memverifikasi laporan.')
+      showToast(formatErrorMessage(err, 'Gagal memverifikasi laporan.'), 'error')
     } finally {
       setIsActionLoading(false)
     }
@@ -274,7 +270,7 @@ function AdminDashboardPage() {
       await reloadData()
       await router.invalidate()
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Gagal menugaskan teknisi.')
+      showToast(formatErrorMessage(err, 'Gagal menugaskan teknisi.'), 'error')
     } finally {
       setIsActionLoading(false)
     }
@@ -295,7 +291,7 @@ function AdminDashboardPage() {
       await reloadData()
       await router.invalidate()
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Gagal menolak laporan.')
+      showToast(formatErrorMessage(err, 'Gagal menolak laporan.'), 'error')
     } finally {
       setIsActionLoading(false)
     }
@@ -319,7 +315,7 @@ function AdminDashboardPage() {
       await reloadData()
       await router.invalidate()
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Gagal menandai duplikat.')
+      showToast(formatErrorMessage(err, 'Gagal menandai duplikat.'), 'error')
     } finally {
       setIsActionLoading(false)
     }
@@ -345,7 +341,7 @@ function AdminDashboardPage() {
       await reloadData()
       await router.invalidate()
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Gagal meninjau penyelesaian.')
+      showToast(formatErrorMessage(err, 'Gagal meninjau penyelesaian.'), 'error')
     } finally {
       setIsActionLoading(false)
     }
@@ -363,21 +359,15 @@ function AdminDashboardPage() {
   ]
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#DDD6FE]">
+    <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
       <DashboardHeader
         user={user}
         roleLabel="Admin Sarpras"
         roleColor="bg-[#FECDD3]"
       />
 
-      {/* Success Toast */}
-      {successToast ? (
-        <div className="fixed bottom-6 right-6 z-50 p-4 bg-[#D9F99D] border-2 border-[#09090B] shadow-[4px_4px_0_0_#09090B] flex items-center gap-3 animate-in slide-in-from-bottom-2">
-          <CheckCircle className="w-5 h-5 text-[#09090B] shrink-0" strokeWidth={2.5} />
-          <div className="font-bold text-xs md:text-sm text-[#09090B]">
-            {successToast}
-          </div>
-        </div>
+      {toast ? (
+        <NeoToast toast={toast} onClose={() => setToast(null)} />
       ) : null}
 
       <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full space-y-6">

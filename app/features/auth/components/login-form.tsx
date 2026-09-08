@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import {
   LogIn,
   AlertTriangle,
@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { authClient } from '~/lib/auth-client'
 import { Button } from '~/components/ui/button'
+import { formatErrorMessage } from '~/lib/utils'
 import { QuickFillDemo } from './quick-fill-demo'
 
 interface LoginFormProps {
@@ -23,8 +24,6 @@ export function LoginForm({
   initialError,
   redirectUrl = '/dashboard',
 }: LoginFormProps) {
-  const navigate = useNavigate()
-
   const [activeTab, setActiveTab] = React.useState<'reporter' | 'staff'>(
     initialError === 'staff_oauth_forbidden' ? 'staff' : 'reporter',
   )
@@ -48,9 +47,7 @@ export function LoginForm({
         callbackURL: redirectUrl,
       })
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'Gagal terhubung dengan layanan Google.'
-      setErrorMsg(message)
+      setErrorMsg(formatErrorMessage(err, 'Gagal terhubung dengan layanan Google.'))
       setIsGoogleLoading(false)
     }
   }
@@ -74,7 +71,10 @@ export function LoginForm({
 
       if (error) {
         setErrorMsg(
-          error.message || 'Kredensial tidak valid. Silakan periksa kembali email dan kata sandi.',
+          formatErrorMessage(
+            error.message,
+            'Kredensial tidak valid. Silakan periksa kembali email dan kata sandi.',
+          ),
         )
         setIsLoading(false)
         return
@@ -104,11 +104,7 @@ export function LoginForm({
         window.location.href = targetUrl
       }
     } catch (err: unknown) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : 'Terjadi kesalahan sistem saat proses masuk.'
-      setErrorMsg(message)
+      setErrorMsg(formatErrorMessage(err, 'Terjadi kesalahan sistem saat proses masuk.'))
       setIsLoading(false)
     }
   }

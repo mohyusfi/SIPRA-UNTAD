@@ -11,7 +11,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { Button } from '~/components/ui/button'
-import { formatDate } from '~/lib/utils'
+import { formatDate, formatErrorMessage } from '~/lib/utils'
 import {
   createStaffUserAction,
   updateStaffRoleAction,
@@ -30,7 +30,7 @@ export interface StaffUserItem {
 interface StaffManagementProps {
   initialStaff: StaffUserItem[]
   currentAdminId: string
-  onNotify: (msg: string) => void
+  onNotify: (msg: string, type?: 'success' | 'error') => void
 }
 
 const ROLE_CONFIG: Record<
@@ -128,7 +128,7 @@ export function StaffManagement({
       setPassword('Password123!')
       onNotify(`Akun ${ROLE_CONFIG[role].label} atas nama "${created.name}" berhasil dibuat.`)
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Gagal membuat akun staf.')
+      onNotify(formatErrorMessage(err, 'Gagal membuat akun staf.'), 'error')
     } finally {
       setIsSubmitting(false)
     }
@@ -158,7 +158,7 @@ export function StaffManagement({
       setRoleModalUser(null)
       onNotify(`Peran akun "${updated.name}" berhasil diubah menjadi ${ROLE_CONFIG[updated.role]?.label || updated.role}.`)
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Gagal mengubah peran staf.')
+      onNotify(formatErrorMessage(err, 'Gagal mengubah peran staf.'), 'error')
     } finally {
       setIsUpdatingRole(false)
     }
@@ -183,7 +183,7 @@ export function StaffManagement({
       setPasswordModalUser(null)
       onNotify(`Kata sandi akun "${targetName}" berhasil diperbarui.`)
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Gagal me-reset kata sandi.')
+      onNotify(formatErrorMessage(err, 'Gagal me-reset kata sandi.'), 'error')
     } finally {
       setIsResettingPassword(false)
     }

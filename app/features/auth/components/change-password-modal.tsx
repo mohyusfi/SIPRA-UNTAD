@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Key, X, Eye, EyeOff, AlertTriangle, Lock } from 'lucide-react'
 import { authClient } from '~/lib/auth-client'
 import { Button } from '~/components/ui/button'
+import { formatErrorMessage } from '~/lib/utils'
 
 interface ChangePasswordModalProps {
   isOpen: boolean
@@ -93,7 +94,7 @@ export function ChangePasswordModal({
         if (errLower.includes('current password') || errLower.includes('invalid') || errLower.includes('incorrect') || error.status === 400) {
           setErrorMessage('Kata sandi lama yang Anda masukkan salah. Silakan periksa kembali.')
         } else {
-          setErrorMessage(error.message || 'Gagal mengubah kata sandi. Silakan coba lagi.')
+          setErrorMessage(formatErrorMessage(error.message, 'Gagal mengubah kata sandi. Silakan coba lagi.'))
         }
         setIsLoading(false)
         return
@@ -104,8 +105,7 @@ export function ChangePasswordModal({
       onSuccess('Kata sandi Anda berhasil diperbarui!')
       onClose()
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Terjadi kesalahan sistem.'
-      setErrorMessage(msg)
+      setErrorMessage(formatErrorMessage(err, 'Terjadi kesalahan sistem saat mengubah kata sandi.'))
       setIsLoading(false)
     }
   }
