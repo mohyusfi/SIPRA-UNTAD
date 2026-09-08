@@ -138,7 +138,7 @@ export function CompletionModal({
               Foto Bukti Hasil Perbaikan <span className="text-red-600">*</span>
             </label>
             <p className="text-xs text-[#52525B] mb-2">
-              Unggah 1 hingga 5 foto bukti fisik hasil perbaikan (Maks 5MB per foto, JPG/PNG/WebP).
+              Unggah 1 hingga 5 foto bukti fisik hasil perbaikan (Otomatis dikompresi ke WebP).
             </p>
             <PhotoUploader
               photos={photos}

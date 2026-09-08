@@ -38,6 +38,7 @@ type TrackReport = NonNullable<
 type TrackLoaderData = {
   report: TrackReport | null
   searchedCode: string
+  errorMessage?: string | null
 }
 
 export const Route = createFileRoute('/track')({
@@ -52,12 +53,18 @@ export const Route = createFileRoute('/track')({
     deps: { code?: string }
   }): Promise<TrackLoaderData> => {
     if (!deps.code || deps.code.trim() === '') {
-      return { report: null, searchedCode: '' }
+      return { report: null, searchedCode: '', errorMessage: null }
     }
-    const report = await getReportByTrackingCode({
-      data: { trackingCode: deps.code.trim() },
-    })
-    return { report, searchedCode: deps.code.trim() }
+    try {
+      const report = await getReportByTrackingCode({
+        data: { trackingCode: deps.code.trim() },
+      })
+      return { report, searchedCode: deps.code.trim(), errorMessage: null }
+    } catch (err: unknown) {
+      const msg =
+        (err as Error)?.message || 'Terjadi kesalahan saat melacak laporan.'
+      return { report: null, searchedCode: deps.code.trim(), errorMessage: msg }
+    }
   },
   component: TrackPage,
 })
@@ -104,7 +111,7 @@ function getStepIndex(status: string): number {
 }
 
 function TrackPage() {
-  const { report, searchedCode } = Route.useLoaderData()
+  const { report, searchedCode, errorMessage } = Route.useLoaderData()
   const search = Route.useSearch()
   const navigate = useNavigate()
   const [inputCode, setInputCode] = React.useState(search.code || '')
@@ -156,7 +163,19 @@ function TrackPage() {
         </div>
 
         {/* Results View */}
-        {searchedCode && !report && (
+        {errorMessage ? (
+          <div className="bg-[#FAF8F5] border-2 border-[#09090B] shadow-[4px_4px_0_0_#09090B] p-8 text-center space-y-3">
+            <div className="w-12 h-12 mx-auto border-2 border-[#09090B] bg-[#FECDD3] flex items-center justify-center shadow-[3px_3px_0_0_#09090B]">
+              <AlertCircle className="w-6 h-6 text-[#09090B]" strokeWidth={2.5} />
+            </div>
+            <h3 className="text-lg font-extrabold text-[#09090B]">
+              Batas Permintaan Tercapai
+            </h3>
+            <p className="text-xs md:text-sm text-[#52525B] max-w-md mx-auto">
+              {errorMessage}
+            </p>
+          </div>
+        ) : searchedCode && !report ? (
           <div className="bg-[#FAF8F5] border-2 border-[#09090B] shadow-[4px_4px_0_0_#09090B] p-8 text-center space-y-3">
             <div className="w-12 h-12 mx-auto border-2 border-[#09090B] bg-[#FECDD3] flex items-center justify-center shadow-[3px_3px_0_0_#09090B]">
               <XCircle className="w-6 h-6 text-[#09090B]" strokeWidth={2.5} />
@@ -173,7 +192,7 @@ function TrackPage() {
               tiket pelaporan Anda.
             </p>
           </div>
-        )}
+        ) : null}
 
         {report && (
           <div className="space-y-6">

@@ -6,25 +6,7 @@ import { categories, locations, reports, reportPhotos, reportTimeline } from '~/
 import { supabase, getBatchSignedUrls } from '~/lib/supabase'
 import { generateTrackingCode } from '~/lib/utils'
 import { getSessionFromServer } from '~/lib/auth-session.server'
-
-const rateLimitMap = new Map<string, number[]>()
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now()
-  const windowMs = 15 * 60 * 1000
-  const maxRequests = 5
-
-  const timestamps = rateLimitMap.get(ip) || []
-  const recentTimestamps = timestamps.filter((time) => now - time < windowMs)
-
-  if (recentTimestamps.length >= maxRequests) {
-    return false
-  }
-
-  recentTimestamps.push(now)
-  rateLimitMap.set(ip, recentTimestamps)
-  return true
-}
+import { resolveRateLimitKey, consumeRateLimit } from '~/lib/rate-limit.server'
 
 export const getMasterData = createServerFn({ method: 'GET' }).handler(
   async () => {
@@ -99,13 +81,21 @@ export const submitReport = createServerFn({ method: 'POST' })
       }
     }
 
-    const clientKey = 'client-session'
-    if (!checkRateLimit(clientKey)) {
+    const session = await getSessionFromServer()
+    const sessionUser = session?.user || null
+
+    const rateLimitKey = await resolveRateLimitKey('submit_report', sessionUser)
+    const rateLimitResult = await consumeRateLimit(rateLimitKey, 5, 15 * 60)
+    if (!rateLimitResult.allowed) {
+      const minutes = Math.max(1, Math.ceil(rateLimitResult.resetInSeconds / 60))
       return {
         success: false,
-        error: 'Terlalu banyak pengajuan laporan. Silakan coba kembali dalam 15 menit.',
+        error: `Terlalu banyak pengajuan laporan. Silakan coba kembali dalam ${minutes} menit.`,
       }
     }
+
+    const trackingCode = generateTrackingCode()
+    const reportId = crypto.randomUUID()
 
     let parsedJson: unknown
     try {
@@ -116,12 +106,6 @@ export const submitReport = createServerFn({ method: 'POST' })
         error: 'Format deskripsi tidak valid.',
       }
     }
-
-    const session = await getSessionFromServer()
-    const sessionUser = session?.user || null
-
-    const trackingCode = generateTrackingCode()
-    const reportId = crypto.randomUUID()
 
     const reporterId = sessionUser ? sessionUser.id : null
     let reporterName: string | null = null
@@ -149,31 +133,41 @@ export const submitReport = createServerFn({ method: 'POST' })
       reporterEmail,
     })
 
-    for (let i = 0; i < data.photos.length; i++) {
-      const photo = data.photos[i]
-      const cleanBase64 = photo.base64.replace(/^data:image\/\w+;base64,/, '')
-      const fileBuffer = Buffer.from(cleanBase64, 'base64')
-      const sanitizedName = photo.name.replace(/[^a-zA-Z0-9.-]/g, '_')
-      const fileKey = `reports/${reportId}/${Date.now()}-${i}-${sanitizedName}`
+    await Promise.all(
+      data.photos.map(
+        async (
+          photo: {
+            name: string
+            type: string
+            size: number
+            base64: string
+          },
+          i: number,
+        ) => {
+        const cleanBase64 = photo.base64.replace(/^data:image\/\w+;base64,/, '')
+        const fileBuffer = Buffer.from(cleanBase64, 'base64')
+        const sanitizedName = photo.name.replace(/[^a-zA-Z0-9.-]/g, '_')
+        const fileKey = `reports/${reportId}/${Date.now()}-${i}-${sanitizedName}`
 
-      const { error: uploadError } = await supabase.storage
-        .from('report-attachments')
-        .upload(fileKey, fileBuffer, {
-          contentType: photo.type,
-          upsert: false,
-        })
+        const { error: uploadError } = await supabase.storage
+          .from('report-attachments')
+          .upload(fileKey, fileBuffer, {
+            contentType: photo.type,
+            upsert: false,
+          })
 
-      if (uploadError) {
-        console.error('Upload foto gagal:', uploadError)
-      } else {
-        await db.insert(reportPhotos).values({
-          id: crypto.randomUUID(),
-          reportId,
-          fileKey,
-          photoType: 'initial',
-        })
-      }
-    }
+        if (uploadError) {
+          console.error('Upload foto gagal:', uploadError)
+        } else {
+          await db.insert(reportPhotos).values({
+            id: crypto.randomUUID(),
+            reportId,
+            fileKey,
+            photoType: 'initial',
+          })
+        }
+      }),
+    )
 
     await db.insert(reportTimeline).values({
       id: crypto.randomUUID(),
@@ -197,6 +191,14 @@ const getReportInputSchema = z.object({
 export const getReportByTrackingCode = createServerFn({ method: 'GET' })
   .validator((data: unknown) => getReportInputSchema.parse(data))
   .handler(async ({ data }) => {
+    const rateLimitKey = await resolveRateLimitKey('track_report')
+    const rateLimitResult = await consumeRateLimit(rateLimitKey, 15, 60)
+    if (!rateLimitResult.allowed) {
+      throw new Error(
+        `Terlalu banyak permintaan pelacakan. Silakan coba kembali dalam ${rateLimitResult.resetInSeconds} detik.`,
+      )
+    }
+
     const report = await db.query.reports.findFirst({
       where: eq(reports.trackingCode, data.trackingCode.trim().toUpperCase()),
       with: {

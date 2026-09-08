@@ -8,13 +8,20 @@ import {
   Check,
   X,
   AlertCircle,
+  Loader2,
 } from 'lucide-react'
 import { cn } from '~/lib/utils'
+import {
+  compressImageToWebP,
+  compressCanvasToWebP,
+  formatFileSize,
+} from '~/lib/image-compressor'
 
 export interface UploadedPhoto {
   name: string
   type: string
   size: number
+  originalSize?: number
   base64: string
 }
 
@@ -23,6 +30,7 @@ interface PhotoUploaderProps {
   onChange: (photos: UploadedPhoto[]) => void
   maxPhotos?: number
   maxSizeBytes?: number
+  maxRawSizeBytes?: number
   error?: string
 }
 
@@ -31,6 +39,7 @@ export function PhotoUploader({
   onChange,
   maxPhotos = 5,
   maxSizeBytes = 5 * 1024 * 1024,
+  maxRawSizeBytes = 20 * 1024 * 1024,
   error,
 }: PhotoUploaderProps) {
   const fileInputRef = React.useRef<HTMLInputElement>(null)
@@ -39,6 +48,8 @@ export function PhotoUploader({
 
   const [dragOver, setDragOver] = React.useState(false)
   const [localError, setLocalError] = React.useState<string | null>(null)
+  const [isCompressing, setIsCompressing] = React.useState(false)
+  const [compressionMessage, setCompressionMessage] = React.useState<string | null>(null)
 
   // In-App Camera Modal State
   const [isCameraOpen, setIsCameraOpen] = React.useState(false)
@@ -118,10 +129,12 @@ export function PhotoUploader({
   }, [isCameraOpen, cameraFacing, capturedPhoto, startCameraStream, stopCameraStream])
 
   const handleOpenLocalPicker = () => {
+    if (isCompressing) return
     fileInputRef.current?.click()
   }
 
   const handleOpenLiveCamera = () => {
+    if (isCompressing) return
     setLocalError(null)
     if (photos.length >= maxPhotos) {
       setLocalError(`Maksimal hanya ${maxPhotos} foto yang diizinkan.`)
@@ -142,17 +155,18 @@ export function PhotoUploader({
     setCameraFacing((prev) => (prev === 'environment' ? 'user' : 'environment'))
   }
 
-  const handleSnapPhoto = () => {
+  const handleSnapPhoto = async () => {
     const video = videoRef.current
     if (!video) return
 
-    const canvas = document.createElement('canvas')
     const width = video.videoWidth || 1280
     const height = video.videoHeight || 720
+
+    const canvas = document.createElement('canvas')
     canvas.width = width
     canvas.height = height
 
-    const ctx = canvas.getContext('2d')
+    const ctx = canvas.getContext('2d', { alpha: false })
     if (!ctx) return
 
     // If front camera, flip horizontally to feel like a mirror
@@ -162,22 +176,27 @@ export function PhotoUploader({
     }
 
     ctx.drawImage(video, 0, 0, width, height)
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.85)
-
-    const base64Prefix = 'data:image/jpeg;base64,'
-    const sizeInBytes = Math.round(((dataUrl.length - base64Prefix.length) * 3) / 4)
-    const timestamp = Date.now()
-    const fileName = `kamera-${cameraFacing === 'environment' ? 'belakang' : 'depan'}-${timestamp}.jpg`
-
-    setCapturedPhoto({
-      name: fileName,
-      type: 'image/jpeg',
-      size: sizeInBytes,
-      base64: dataUrl,
-    })
-
-    // Pause stream while previewing
     stopCameraStream()
+
+    try {
+      setCameraLoading(true)
+      const timestamp = Date.now()
+      const fileName = `kamera-${cameraFacing === 'environment' ? 'belakang' : 'depan'}-${timestamp}.webp`
+      const result = await compressCanvasToWebP(canvas, fileName, 0.8)
+
+      setCapturedPhoto({
+        name: result.name,
+        type: 'image/webp',
+        size: result.size,
+        originalSize: result.originalSize,
+        base64: result.base64,
+      })
+    } catch (err: unknown) {
+      console.error('Gagal mengompresi foto kamera:', err)
+      setCameraError('Gagal memproses hasil jepretan foto ke format WebP.')
+    } finally {
+      setCameraLoading(false)
+    }
   }
 
   const handleRetake = () => {
@@ -197,8 +216,8 @@ export function PhotoUploader({
     handleCloseCameraModal()
   }
 
-  const processFiles = (fileList: FileList | null) => {
-    if (!fileList) return
+  const processFiles = async (fileList: FileList | null) => {
+    if (!fileList || fileList.length === 0) return
     setLocalError(null)
 
     const availableSlots = maxPhotos - photos.length
@@ -208,36 +227,61 @@ export function PhotoUploader({
     }
 
     const filesToProcess = Array.from(fileList).slice(0, availableSlots)
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp']
+    const validTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/heic',
+      'image/heif',
+      'image/bmp',
+    ]
 
-    filesToProcess.forEach((file) => {
-      if (!validTypes.includes(file.type)) {
-        setLocalError('Hanya format gambar JPEG, PNG, dan WebP yang didukung.')
+    for (const file of filesToProcess) {
+      if (!file.type.startsWith('image/') && !validTypes.includes(file.type)) {
+        setLocalError('Hanya format file gambar yang didukung.')
         return
       }
 
-      if (file.size > maxSizeBytes) {
+      if (file.size > maxRawSizeBytes) {
         setLocalError(
-          `Ukuran file "${file.name}" melebihi batas 5MB (${(file.size / (1024 * 1024)).toFixed(1)}MB).`,
+          `Ukuran file mentah "${file.name}" melebihi batas 20MB (${(file.size / (1024 * 1024)).toFixed(1)}MB).`,
         )
         return
       }
+    }
 
-      const reader = new FileReader()
-      reader.onload = () => {
-        const base64 = reader.result as string
-        onChange([
-          ...photos,
-          {
-            name: file.name,
-            type: file.type,
-            size: file.size,
-            base64,
-          },
-        ])
-      }
-      reader.readAsDataURL(file)
-    })
+    setIsCompressing(true)
+    setCompressionMessage(
+      filesToProcess.length > 1
+        ? `Mengompresi ${filesToProcess.length} foto ke format WebP...`
+        : 'Mengompresi foto ke format WebP...',
+    )
+
+    try {
+      const compressionPromises = filesToProcess.map((file) =>
+        compressImageToWebP(file, file.name, {
+          maxDimension: 1600,
+          quality: 0.8,
+        }),
+      )
+      const results = await Promise.all(compressionPromises)
+
+      const newPhotos: UploadedPhoto[] = results.map((res) => ({
+        name: res.name,
+        type: res.type,
+        size: res.size,
+        originalSize: res.originalSize,
+        base64: res.base64,
+      }))
+
+      onChange([...photos, ...newPhotos])
+    } catch (err: unknown) {
+      console.error('Gagal mengompresi gambar:', err)
+      setLocalError('Terjadi kegagalan saat mengompresi gambar ke WebP.')
+    } finally {
+      setIsCompressing(false)
+      setCompressionMessage(null)
+    }
   }
 
   const handleRemove = (index: number) => {
@@ -252,17 +296,32 @@ export function PhotoUploader({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        accept="image/*"
         multiple
         className="hidden"
         onChange={(e) => {
-          processFiles(e.target.files)
+          void processFiles(e.target.files)
           if (fileInputRef.current) fileInputRef.current.value = ''
         }}
       />
 
-      {/* Main Uploader Box */}
-      {photos.length < maxPhotos && (
+      {/* Compression In-Progress Banner */}
+      {isCompressing ? (
+        <div className="border-2 border-[#09090B] bg-[#FAF8F5] p-5 md:p-6 text-center flex flex-col items-center justify-center gap-2.5 shadow-[3px_3px_0_0_#09090B]">
+          <div className="w-10 h-10 border-2 border-[#09090B] bg-[#D9F99D] flex items-center justify-center shadow-[2px_2px_0_0_#09090B]">
+            <Loader2 className="w-5 h-5 text-[#09090B] animate-spin" strokeWidth={2.5} />
+          </div>
+          <div>
+            <p className="text-xs md:text-sm font-bold text-[#09090B]">
+              {compressionMessage || 'Sedang mengompresi foto ke format WebP...'}
+            </p>
+            <p className="text-[11px] text-[#52525B] mt-0.5 font-mono">
+              Mengoptimalkan dimensi (maks. 1600px) & efisiensi ukuran berkas
+            </p>
+          </div>
+        </div>
+      ) : photos.length < maxPhotos ? (
+        /* Main Uploader Box */
         <div
           onDragOver={(e) => {
             e.preventDefault()
@@ -272,7 +331,7 @@ export function PhotoUploader({
           onDrop={(e) => {
             e.preventDefault()
             setDragOver(false)
-            processFiles(e.dataTransfer.files)
+            void processFiles(e.dataTransfer.files)
           }}
           className={cn(
             'border-2 border-dashed border-[#09090B] bg-[#FAF8F5] p-5 md:p-6 text-center transition-all flex flex-col items-center justify-center gap-3',
@@ -293,7 +352,7 @@ export function PhotoUploader({
               Unggah Foto Bukti Kerusakan Fasilitas
             </p>
             <p className="text-[11px] text-[#52525B] mt-0.5 font-mono">
-              JPEG, PNG, WebP • Maks. 5MB per berkas • ({photos.length}/{maxPhotos} Foto Terpilih)
+              Otomatis dikompresi ke WebP • Maks. 20MB per berkas • ({photos.length}/{maxPhotos} Foto Terpilih)
             </p>
           </div>
 
@@ -318,57 +377,85 @@ export function PhotoUploader({
             </button>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Error Alert */}
-      {(error || localError) && (
+      {error || localError ? (
         <div className="p-2.5 border-2 border-[#09090B] bg-[#FECDD3] flex items-center gap-2 text-xs font-bold text-[#09090B] shadow-[2px_2px_0_0_#09090B]">
           <AlertCircle className="w-4 h-4 shrink-0 text-[#09090B]" strokeWidth={2.5} />
           <span>{error || localError}</span>
         </div>
-      )}
+      ) : null}
 
       {/* Thumbnail Previews */}
-      {photos.length > 0 && (
+      {photos.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 pt-1">
-          {photos.map((photo, idx) => (
-            <div
-              key={idx}
-              className="group relative border-2 border-[#09090B] bg-white p-1.5 shadow-[3px_3px_0_0_#09090B] flex flex-col"
-            >
-              <div className="relative aspect-square w-full overflow-hidden border border-[#09090B] bg-neutral-100">
-                <img
-                  src={photo.base64}
-                  alt={photo.name}
-                  className="w-full h-full object-cover"
-                />
-                <button
-                  type="button"
-                  onClick={() => handleRemove(idx)}
-                  className="absolute top-1 right-1 w-6 h-6 bg-[#FECDD3] border-2 border-[#09090B] flex items-center justify-center text-[#09090B] shadow-[1px_1px_0_0_#09090B] hover:bg-rose-300 cursor-pointer"
-                  title="Hapus foto"
-                >
-                  <X className="w-3.5 h-3.5" strokeWidth={3} />
-                </button>
-              </div>
+          {photos.map((photo, idx) => {
+            const hasSavings =
+              Boolean(photo.originalSize) &&
+              photo.originalSize! > photo.size
+            const savingsPct = hasSavings
+              ? Math.round(
+                  ((photo.originalSize! - photo.size) / photo.originalSize!) *
+                    100,
+                )
+              : 0
 
-              <div className="mt-1 px-0.5">
-                <p className="text-[10px] font-bold text-[#09090B] truncate" title={photo.name}>
-                  {photo.name}
-                </p>
-                <p className="text-[9px] font-mono text-[#52525B]">
-                  {(photo.size / 1024).toFixed(0)} KB
-                </p>
+            return (
+              <div
+                key={idx}
+                className="group relative border-2 border-[#09090B] bg-white p-1.5 shadow-[3px_3px_0_0_#09090B] flex flex-col"
+              >
+                <div className="relative aspect-square w-full overflow-hidden border border-[#09090B] bg-neutral-100">
+                  <img
+                    src={photo.base64}
+                    alt={photo.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemove(idx)}
+                    className="absolute top-1 right-1 w-6 h-6 bg-[#FECDD3] border-2 border-[#09090B] flex items-center justify-center text-[#09090B] shadow-[1px_1px_0_0_#09090B] hover:bg-rose-300 cursor-pointer transition-transform active:scale-95"
+                    title="Hapus foto"
+                  >
+                    <X className="w-3.5 h-3.5" strokeWidth={3} />
+                  </button>
+
+                  <div className="absolute bottom-1 left-1">
+                    <span className="inline-block px-1 py-0.5 text-[9px] font-black uppercase font-mono bg-[#D9F99D] text-[#09090B] border border-[#09090B] shadow-[1px_1px_0_0_#09090B]">
+                      WebP
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-1 px-0.5">
+                  <p
+                    className="text-[10px] font-bold text-[#09090B] truncate"
+                    title={photo.name}
+                  >
+                    {photo.name}
+                  </p>
+                  <div className="flex items-center justify-between text-[9px] font-mono mt-0.5">
+                    <span className="text-[#52525B]">
+                      {formatFileSize(photo.size)}
+                    </span>
+                    {hasSavings && savingsPct > 0 ? (
+                      <span className="text-[#15803D] font-bold">
+                        -{savingsPct}%
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
-      )}
+      ) : null}
 
       {/* ========================================================================= */}
       {/* IN-APP CAMERA MODAL                                                       */}
       {/* ========================================================================= */}
-      {isCameraOpen && (
+      {isCameraOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#09090B]/80 backdrop-blur-xs animate-in fade-in duration-150">
           <div className="relative w-full max-w-lg bg-[#FAF8F5] border-3 border-[#09090B] shadow-[8px_8px_0_0_#09090B] flex flex-col overflow-hidden">
             {/* Modal Header */}
@@ -383,7 +470,7 @@ export function PhotoUploader({
                   </h3>
                   <p className="text-[10px] font-bold text-[#09090B]/80 font-mono">
                     {capturedPhoto
-                      ? 'Pratinjau Hasil Foto'
+                      ? 'Pratinjau Hasil WebP'
                       : cameraFacing === 'environment'
                         ? 'Kamera Belakang (Fasilitas)'
                         : 'Kamera Depan'}
@@ -392,7 +479,7 @@ export function PhotoUploader({
               </div>
 
               <div className="flex items-center gap-1.5">
-                {!capturedPhoto && !cameraError && (
+                {!capturedPhoto && !cameraError ? (
                   <button
                     type="button"
                     onClick={handleToggleCameraFacing}
@@ -402,7 +489,7 @@ export function PhotoUploader({
                     <SwitchCamera className="w-3.5 h-3.5 text-[#09090B]" strokeWidth={2.5} />
                     <span className="hidden sm:inline">Putar Kamera</span>
                   </button>
-                )}
+                ) : null}
 
                 <button
                   type="button"
@@ -457,11 +544,12 @@ export function PhotoUploader({
                       cameraFacing === 'user' && '-scale-x-100',
                     )}
                   />
-                  {cameraLoading && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-white text-xs font-mono font-bold">
-                      Menghubungkan kamera...
+                  {cameraLoading ? (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-white text-xs font-mono font-bold flex-col gap-2">
+                      <Loader2 className="w-6 h-6 animate-spin text-[#D9F99D]" strokeWidth={2.5} />
+                      <span>Menghubungkan kamera...</span>
                     </div>
-                  )}
+                  ) : null}
                 </>
               )}
             </div>
@@ -505,7 +593,7 @@ export function PhotoUploader({
                   {/* Big Shutter Button */}
                   <button
                     type="button"
-                    onClick={handleSnapPhoto}
+                    onClick={() => void handleSnapPhoto()}
                     disabled={Boolean(cameraError) || cameraLoading}
                     className="w-14 h-14 rounded-full border-3 border-[#09090B] bg-[#D9F99D] shadow-[3px_3px_0_0_#09090B] flex items-center justify-center hover:scale-105 active:scale-95 disabled:opacity-40 disabled:scale-100 cursor-pointer transition-all"
                     title="Jepret Foto"
@@ -527,7 +615,7 @@ export function PhotoUploader({
             </div>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

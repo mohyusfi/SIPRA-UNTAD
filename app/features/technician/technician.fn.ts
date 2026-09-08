@@ -215,33 +215,43 @@ export const completeTaskAction = createServerFn({ method: 'POST' })
       throw new Error('Hanya tugas berstatus "Dalam Pengerjaan" yang dapat diajukan penyelesaiannya.')
     }
 
-    for (let i = 0; i < data.photos.length; i++) {
-      const photo = data.photos[i]
-      const cleanBase64 = photo.base64.replace(/^data:image\/\w+;base64,/, '')
-      const fileBuffer = Buffer.from(cleanBase64, 'base64')
-      const sanitizedName = photo.name.replace(/[^a-zA-Z0-9.-]/g, '_')
-      const fileKey = `reports/${data.reportId}/proof-${Date.now()}-${i}-${sanitizedName}`
+    await Promise.all(
+      data.photos.map(
+        async (
+          photo: {
+            name: string
+            type: string
+            size: number
+            base64: string
+          },
+          i: number,
+        ) => {
+        const cleanBase64 = photo.base64.replace(/^data:image\/\w+;base64,/, '')
+        const fileBuffer = Buffer.from(cleanBase64, 'base64')
+        const sanitizedName = photo.name.replace(/[^a-zA-Z0-9.-]/g, '_')
+        const fileKey = `reports/${data.reportId}/proof-${Date.now()}-${i}-${sanitizedName}`
 
-      const { error: uploadError } = await supabase.storage
-        .from('report-attachments')
-        .upload(fileKey, fileBuffer, {
-          contentType: photo.type,
-          upsert: false,
+        const { error: uploadError } = await supabase.storage
+          .from('report-attachments')
+          .upload(fileKey, fileBuffer, {
+            contentType: photo.type,
+            upsert: false,
+          })
+
+        if (uploadError) {
+          console.error('Upload foto bukti gagal:', uploadError)
+          throw new Error(`Gagal mengunggah foto bukti: ${uploadError.message}`)
+        }
+
+        await db.insert(reportPhotos).values({
+          id: crypto.randomUUID(),
+          reportId: data.reportId,
+          fileKey,
+          photoType: 'proof',
+          uploadedBy: techUser.id,
         })
-
-      if (uploadError) {
-        console.error('Upload foto bukti gagal:', uploadError)
-        throw new Error(`Gagal mengunggah foto bukti: ${uploadError.message}`)
-      }
-
-      await db.insert(reportPhotos).values({
-        id: crypto.randomUUID(),
-        reportId: data.reportId,
-        fileKey,
-        photoType: 'proof',
-        uploadedBy: techUser.id,
-      })
-    }
+      }),
+    )
 
     await db
       .update(reports)

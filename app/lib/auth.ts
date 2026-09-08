@@ -32,6 +32,10 @@ export const auth = betterAuth({
     trustedProxyHeaders: true,
   },
   secret: process.env.BETTER_AUTH_SECRET,
+  rateLimit: {
+    window: 60,
+    max: 10,
+  },
   emailAndPassword: {
     enabled: true,
   },

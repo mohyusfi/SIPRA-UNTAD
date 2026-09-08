@@ -1,3 +1,4 @@
+import * as React from 'react'
 import type { ReactNode } from 'react'
 import {
   Outlet,
@@ -56,6 +57,19 @@ function NavigationProgressBar() {
 }
 
 function RootComponent() {
+  React.useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const hasDid = document.cookie.includes('sipra_did=')
+      if (!hasDid) {
+        const did =
+          typeof crypto !== 'undefined' && crypto.randomUUID
+            ? crypto.randomUUID()
+            : Math.random().toString(36).slice(2)
+        document.cookie = `sipra_did=${did}; path=/; max-age=31536000; SameSite=Lax`
+      }
+    }
+  }, [])
+
   return (
     <RootDocument>
       <Outlet />

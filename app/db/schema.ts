@@ -6,6 +6,7 @@ import {
   boolean,
   index,
   jsonb,
+  integer,
 } from 'drizzle-orm/pg-core'
 
 export const user = pgTable('user', {
@@ -258,3 +259,20 @@ export const reportTimelineRelations = relations(reportTimeline, ({ one }) => ({
     references: [user.id],
   }),
 }))
+
+export const rateLimits = pgTable(
+  'rate_limits',
+  {
+    id: text('id').primaryKey(),
+    key: text('key').notNull(),
+    count: integer('count').default(1).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('rate_limits_key_idx').on(table.key),
+    index('rate_limits_expires_at_idx').on(table.expiresAt),
+  ],
+)
