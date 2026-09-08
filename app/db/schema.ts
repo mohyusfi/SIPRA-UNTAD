@@ -155,40 +155,53 @@ export const reports = pgTable(
   (table) => [
     index('reports_status_idx').on(table.status),
     index('reports_trackingCode_idx').on(table.trackingCode),
+    index('reports_categoryId_idx').on(table.categoryId),
+    index('reports_locationId_idx').on(table.locationId),
+    index('reports_reporterId_idx').on(table.reporterId),
+    index('reports_assignedTechnicianId_idx').on(table.assignedTechnicianId),
+    index('reports_createdAt_idx').on(table.createdAt),
   ],
 )
 
-export const reportPhotos = pgTable('report_photos', {
-  id: text('id').primaryKey(),
-  reportId: text('report_id')
-    .notNull()
-    .references(() => reports.id, { onDelete: 'cascade' }),
-  fileKey: text('file_key').notNull(),
-  photoType: text('photo_type').notNull(),
-  uploadedBy: text('uploaded_by').references(() => user.id, {
-    onDelete: 'set null',
-  }),
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-})
+export const reportPhotos = pgTable(
+  'report_photos',
+  {
+    id: text('id').primaryKey(),
+    reportId: text('report_id')
+      .notNull()
+      .references(() => reports.id, { onDelete: 'cascade' }),
+    fileKey: text('file_key').notNull(),
+    photoType: text('photo_type').notNull(),
+    uploadedBy: text('uploaded_by').references(() => user.id, {
+      onDelete: 'set null',
+    }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index('report_photos_reportId_idx').on(table.reportId)],
+)
 
-export const reportTimeline = pgTable('report_timeline', {
-  id: text('id').primaryKey(),
-  reportId: text('report_id')
-    .notNull()
-    .references(() => reports.id, { onDelete: 'cascade' }),
-  actorId: text('actor_id').references(() => user.id, {
-    onDelete: 'set null',
-  }),
-  action: text('action').notNull(),
-  fromStatus: text('from_status'),
-  toStatus: text('to_status').notNull(),
-  notes: text('notes'),
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-})
+export const reportTimeline = pgTable(
+  'report_timeline',
+  {
+    id: text('id').primaryKey(),
+    reportId: text('report_id')
+      .notNull()
+      .references(() => reports.id, { onDelete: 'cascade' }),
+    actorId: text('actor_id').references(() => user.id, {
+      onDelete: 'set null',
+    }),
+    action: text('action').notNull(),
+    fromStatus: text('from_status'),
+    toStatus: text('to_status').notNull(),
+    notes: text('notes'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index('report_timeline_reportId_idx').on(table.reportId)],
+)
 
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
