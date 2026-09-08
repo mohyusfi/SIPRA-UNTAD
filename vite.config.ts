@@ -9,6 +9,12 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+  optimizeDeps: {
+    exclude: [
+      '@tanstack/start-server-core',
+      '@tanstack/react-start-server',
+    ],
+  },
   plugins: [
     viteTsConfigPaths(),
     tanstackStart({

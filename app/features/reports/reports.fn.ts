@@ -1,12 +1,11 @@
 import { createServerFn } from '@tanstack/react-start'
-import { getRequestHeaders } from '@tanstack/react-start-server'
 import { z } from 'zod'
 import { eq, desc } from 'drizzle-orm'
 import { db } from '~/db'
 import { categories, locations, reports, reportPhotos, reportTimeline } from '~/db/schema'
 import { supabase } from '~/lib/supabase'
 import { generateTrackingCode } from '~/lib/utils'
-import { auth } from '~/lib/auth'
+import { getCurrentUserSession } from '~/lib/auth-server'
 
 const rateLimitMap = new Map<string, number[]>()
 
@@ -118,18 +117,8 @@ export const submitReport = createServerFn({ method: 'POST' })
       }
     }
 
-    let sessionUser: { id: string; name: string; email: string } | null = null
-    try {
-      const headers = getRequestHeaders()
-      const session = await auth.api.getSession({
-        headers: headers as any,
-      })
-      if (session?.user) {
-        sessionUser = session.user as any
-      }
-    } catch {
-      sessionUser = null
-    }
+    const session = await getCurrentUserSession()
+    const sessionUser = session?.user || null
 
     const trackingCode = generateTrackingCode()
     const reportId = crypto.randomUUID()
@@ -275,22 +264,11 @@ export const getReportByTrackingCode = createServerFn({ method: 'GET' })
 
 export const getReporterDashboardData = createServerFn({ method: 'GET' }).handler(
   async () => {
-    let sessionUser: { id: string; name: string; email: string; role: string } | null = null
-    try {
-      const headers = getRequestHeaders()
-      const session = await auth.api.getSession({
-        headers: headers as any,
-      })
-      if (session?.user) {
-        sessionUser = session.user as any
-      }
-    } catch {
-      sessionUser = null
-    }
-
-    if (!sessionUser) {
+    const session = await getCurrentUserSession()
+    if (!session?.user) {
       throw new Error('Sesi tidak valid. Silakan login terlebih dahulu.')
     }
+    const sessionUser = session.user as any
 
     const userReports = await db.query.reports.findMany({
       where: eq(reports.reporterId, sessionUser.id),
