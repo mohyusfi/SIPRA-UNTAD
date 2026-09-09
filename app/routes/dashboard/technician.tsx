@@ -29,7 +29,7 @@ import { NeoToast, type ToastData } from '~/components/ui/neo-toast'
 export const Route = createFileRoute('/dashboard/technician')({
   head: () => ({
     meta: [
-      { title: 'Teknisi Dashboard | SIPANTAD' },
+      { title: 'Teknisi Dashboard | SIPENAD' },
       { name: 'robots', content: 'noindex, nofollow' },
     ],
   }),
@@ -443,7 +443,7 @@ function TechnicianDashboardPage() {
       />
 
       <footer className="border-t-2 border-[#09090B] bg-white py-4 text-center text-xs font-mono text-[#52525B] mt-12">
-        Universitas Tadulako • Panel Teknisi Lapangan • SIPANTAD
+        Universitas Tadulako • Panel Teknisi Lapangan • SIPENAD
       </footer>
     </div>
   )

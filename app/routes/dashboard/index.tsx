@@ -4,7 +4,7 @@ import { getCurrentUserSession } from '~/lib/auth-server'
 export const Route = createFileRoute('/dashboard/')({
   head: () => ({
     meta: [
-      { title: 'Dashboard | SIPANTAD' },
+      { title: 'Dashboard | SIPENAD' },
       { name: 'robots', content: 'noindex, nofollow' },
     ],
   }),

@@ -3,4 +3,4 @@ Allow: /
 Disallow: /dashboard/
 Disallow: /api/
 
-Sitemap: https://sipantad.vercel.app/sitemap.xml
+Sitemap: https://sipenad.vercel.app/sitemap.xml

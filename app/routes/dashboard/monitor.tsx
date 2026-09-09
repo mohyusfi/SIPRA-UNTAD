@@ -28,7 +28,7 @@ type MonitorSearch = z.infer<typeof monitorSearchSchema>
 export const Route = createFileRoute('/dashboard/monitor')({
   head: () => ({
     meta: [
-      { title: 'Monitor Dashboard | SIPANTAD' },
+      { title: 'Monitor Dashboard | SIPENAD' },
       { name: 'robots', content: 'noindex, nofollow' },
     ],
   }),

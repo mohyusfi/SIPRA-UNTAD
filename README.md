@@ -1,6 +1,6 @@
-# SIPANTAD (Sistem Informasi Pelaporan Infrastruktur Untad)
+# SIPENAD (Sistem Informasi Pelaporan Infrastruktur Untad)
 
-Sistem Informasi Pelaporan Infrastruktur Untad (SIPANTAD) adalah platform berbasis web responsif yang dirancang untuk mengelola siklus pelaporan masalah dan penanganan kerusakan fasilitas fisik di lingkungan Universitas Tadulako (Bumi Tadulako Tondo, Palu). Sistem ini mengintegrasikan interaksi antara pelapor (sivitas akademika dan tamu), teknisi lapangan, administrator sarana-prasarana, serta pimpinan universitas secara transparan dan terstruktur.
+Sistem Informasi Pelaporan Infrastruktur Untad (SIPENAD) adalah platform berbasis web responsif yang dirancang untuk mengelola siklus pelaporan masalah dan penanganan kerusakan fasilitas fisik di lingkungan Universitas Tadulako (Bumi Tadulako Tondo, Palu). Sistem ini mengintegrasikan interaksi antara pelapor (sivitas akademika dan tamu), teknisi lapangan, administrator sarana-prasarana, serta pimpinan universitas secara transparan dan terstruktur.
 
 ---
 
@@ -57,8 +57,8 @@ Aplikasi ini mendigitalkan proses penanganan sarana kampus yang sebelumnya bersi
 
 ### 4.2 Instalasi Repositori
 ```bash
-git clone https://github.com/username/sipantad.git
-cd sipantad
+git clone https://github.com/username/sipenad.git
+cd sipenad
 npm install
 ```
 
@@ -153,7 +153,7 @@ npm run db:studio    # Membuka antarmuka grafis Drizzle Studio
 ## 7. Struktur Direktori Proyek
 
 ```
-sipantad/
+sipenad/
 ├── app/
 │   ├── routes/              # Rute berbasis berkas TanStack Router
 │   │   ├── api/             # Endpoint API dan handler Better Auth

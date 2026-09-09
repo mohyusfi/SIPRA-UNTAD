@@ -1,11 +1,11 @@
 # Product Requirements Document (PRD)
-## Sistem Informasi Pelaporan Infrastruktur Untad (SIPANTAD)
+## Sistem Informasi Pelaporan Infrastruktur Untad (SIPENAD)
 
 ---
 
 ### 1. Ringkasan Eksekutif & Latar Belakang
 
-Sistem Informasi Pelaporan Infrastruktur Untad (SIPANTAD) adalah platform berbasis web responsif yang dirancang untuk mengelola seluruh siklus pelaporan masalah dan kerusakan fasilitas fisik di lingkungan Universitas Tadulako (UNTAD). Sistem ini menjembatani sivitas akademika (mahasiswa, dosen, tendik, tamu), petugas teknisi lapangan, administrator sarana-prasarana, serta pimpinan universitas untuk pemantauan kualitas layanan.
+Sistem Informasi Pelaporan Infrastruktur Untad (SIPENAD) adalah platform berbasis web responsif yang dirancang untuk mengelola seluruh siklus pelaporan masalah dan kerusakan fasilitas fisik di lingkungan Universitas Tadulako (UNTAD). Sistem ini menjembatani sivitas akademika (mahasiswa, dosen, tendik, tamu), petugas teknisi lapangan, administrator sarana-prasarana, serta pimpinan universitas untuk pemantauan kualitas layanan.
 
 - **Tipe Aplikasi**: Web Application (Mobile-responsive)
 - **Tingkat Kesiapan**: Minimum Viable Product (MVP) berstandar Best Practice
@@ -289,7 +289,7 @@ Laporan infrastruktur mengikuti transisi status strictly-defined berikut:
 ### 10. Struktur Folder Proyek (Modular & Feature-based)
 
 ```
-sipantad/
+sipenad/
 ├── PRD.md
 ├── .env.example
 ├── app/

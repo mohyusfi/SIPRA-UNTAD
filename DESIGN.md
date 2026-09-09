@@ -1,4 +1,4 @@
-# Design System & UI/UX Specification: SIPANTAD
+# Design System & UI/UX Specification: SIPENAD
 **Sistem Informasi Pelaporan Infrastruktur Untad**
 *Visual Direction: Soft-Pop Neo-Brutalism (Ref: Image Reference 1 & PRD.md)*
 
@@ -173,7 +173,7 @@ Mengikuti pola pada gambar referensi:
    - Separator vertikal garis halus hitam jika diperlukan.
 2. **Tier 2 (Main Navbar)**:
    - Tinggi: 64px, background: `#FAF8F5` (Warm Cream) dengan `border-b-2 border-t-2 border-[#09090B]`.
-   - **Kiri**: Logo `<Radio /> SIPANTAD` dalam kotak terbingkai border tebal (`border-r-2 border-[#09090B] h-full px-6 flex items-center`).
+   - **Kiri**: Logo `<Radio /> SIPENAD` dalam kotak terbingkai border tebal (`border-r-2 border-[#09090B] h-full px-6 flex items-center`).
    - **Tengah**: Menu navigasi (*Beranda*, *Lapor*, *Cek Tiket*, *Statistik Publik*).
    - **Kanan**: Action icons dalam kotak border (`border-l-2 border-[#09090B]`), tombol pencarian cepat (`<Search />`) dan tombol favorit / notifikasi (`<Heart />`).
 
@@ -184,7 +184,7 @@ Mengikuti pola pada gambar referensi:
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ Tier 1:                                              Bantuan | Masuk | Info │
 ├──────────────────┬──────────────────────────────────────┬───────┬───────────┤
-│ [Radio SIPANTAD] │ Beranda   Lapor Masalah   Lacak Status   │[Heart]│  [Search] │
+│ [Radio SIPENAD]  │ Beranda   Lapor Masalah   Lacak Status   │[Heart]│  [Search] │
 ├──────────────────┴──────────────────────────────────────┴───────┴───────────┤
 │                                                                             │
 │  Laporkan kerusakan &                               ┌─────────────────────┐ │
@@ -270,11 +270,11 @@ Sistem melarang keras penggunaan emote/simbol Unicode mentah (seperti emoji HP, 
 </div>
 ```
 
-#### Pemetaan Lengkap Ikon Lucide untuk SIPANTAD
+#### Pemetaan Lengkap Ikon Lucide untuk SIPENAD
 
 | Kategori | Nama Komponen Lucide | Penggunaan dalam Antarmuka |
 |---|---|---|
-| **Identitas & Navigasi** | `<Radio />` | Logo brand SIPANTAD |
+| **Identitas & Navigasi** | `<Radio />` | Logo brand SIPENAD |
 | | `<Search />` | Tombol dan input pencarian tiket |
 | | `<Heart />` | Fitur bookmark / favorit pantau |
 | | `<HelpCircle />` | Tautan pusat bantuan sivitas |

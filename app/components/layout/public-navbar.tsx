@@ -76,7 +76,7 @@ export function PublicNavbar({
           </div>
           <div>
             <span className="font-extrabold text-lg md:text-xl tracking-tight text-[#09090B] leading-none">
-              SIPANTAD
+              SIPENAD
             </span>
             <p className="hidden sm:block text-[10px] uppercase font-bold text-[#52525B] tracking-wider mt-0.5">
               {subtitle}

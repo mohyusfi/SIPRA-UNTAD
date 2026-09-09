@@ -13,12 +13,12 @@ export const Route = createFileRoute('/login')({
   head: () => ({
     meta: [
       {
-        title: 'Masuk Sistem | SIPANTAD',
+        title: 'Masuk Sistem | SIPENAD',
       },
       {
         name: 'description',
         content:
-          'Masuk ke sistem SIPANTAD untuk mengelola laporan kerusakan infrastruktur kampus Universitas Tadulako.',
+          'Masuk ke sistem SIPENAD untuk mengelola laporan kerusakan infrastruktur kampus Universitas Tadulako.',
       },
       {
         name: 'robots',
@@ -44,7 +44,7 @@ function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#DDD6FE]">
-      <PublicNavbar subtitle="Masuk Sistem SIPANTAD" />
+      <PublicNavbar subtitle="Masuk Sistem SIPENAD" />
 
       <main className="flex-1 flex items-center justify-center p-4 md:p-8 py-8 md:py-12">
         <LoginForm initialError={error} redirectUrl={redirectParam} />

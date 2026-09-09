@@ -4,7 +4,6 @@ import {
   UserPlus,
   AlertTriangle,
   Mail,
-  Lock,
   User,
   ArrowRight,
   CheckCircle2,
@@ -12,6 +11,7 @@ import {
 import { z } from 'zod'
 import { authClient } from '~/lib/auth-client'
 import { Button } from '~/components/ui/button'
+import { PasswordInput } from '~/components/ui/password-input'
 import { formatErrorMessage } from '~/lib/utils'
 
 const registerSchema = z
@@ -199,23 +199,13 @@ export function RegisterForm() {
             <label className="block text-xs font-bold uppercase tracking-wider text-[#09090B] mb-1.5">
               Kata Sandi (Minimal 8 Karakter)
             </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-4 w-4 text-[#52525B]" />
-              </div>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className={`w-full pl-9 pr-3 py-2.5 bg-[#FAF8F5] border-2 text-xs md:text-sm font-medium focus:bg-white focus:outline-none transition-all ${
-                  fieldErrors.password
-                    ? 'border-red-600 focus:ring-2 focus:ring-red-200'
-                    : 'border-[#09090B] focus:ring-2 focus:ring-[#C4B5FD]'
-                }`}
-              />
-            </div>
+            <PasswordInput
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              hasError={!!fieldErrors.password}
+            />
             {fieldErrors.password ? (
               <p className="text-[11px] text-red-600 font-bold mt-1">
                 {fieldErrors.password}
@@ -227,23 +217,13 @@ export function RegisterForm() {
             <label className="block text-xs font-bold uppercase tracking-wider text-[#09090B] mb-1.5">
               Konfirmasi Kata Sandi
             </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-4 w-4 text-[#52525B]" />
-              </div>
-              <input
-                type="password"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="••••••••"
-                className={`w-full pl-9 pr-3 py-2.5 bg-[#FAF8F5] border-2 text-xs md:text-sm font-medium focus:bg-white focus:outline-none transition-all ${
-                  fieldErrors.confirmPassword
-                    ? 'border-red-600 focus:ring-2 focus:ring-red-200'
-                    : 'border-[#09090B] focus:ring-2 focus:ring-[#C4B5FD]'
-                }`}
-              />
-            </div>
+            <PasswordInput
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="••••••••"
+              hasError={!!fieldErrors.confirmPassword}
+            />
             {fieldErrors.confirmPassword ? (
               <p className="text-[11px] text-red-600 font-bold mt-1">
                 {fieldErrors.confirmPassword}

@@ -46,7 +46,7 @@ export const Route = createFileRoute("/track")({
   head: () => ({
     meta: [
       {
-        title: "Lacak Status Laporan Kerusakan | SIPANTAD",
+        title: "Lacak Status Laporan Kerusakan | SIPENAD",
       },
       {
         name: "description",
@@ -512,7 +512,7 @@ function TrackPage() {
       <footer className="bg-[#FAF8F5] border-t-2 border-[#09090B] py-6 px-4 text-xs font-bold text-[#52525B] text-center mt-auto">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>
-            SIPANTAD • Sistem Informasi Pelaporan Infrastruktur Untad
+            SIPENAD • Sistem Informasi Pelaporan Infrastruktur Untad
           </span>
           <span className="font-mono text-[11px]">
             Biro Umum dan Keuangan (BUK) UNTAD

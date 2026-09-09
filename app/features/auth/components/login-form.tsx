@@ -4,7 +4,6 @@ import {
   LogIn,
   AlertTriangle,
   Mail,
-  Lock,
   ArrowRight,
   ShieldCheck,
   UserCheck,
@@ -12,6 +11,7 @@ import {
 } from 'lucide-react'
 import { authClient } from '~/lib/auth-client'
 import { Button } from '~/components/ui/button'
+import { PasswordInput } from '~/components/ui/password-input'
 import { formatErrorMessage } from '~/lib/utils'
 
 interface LoginFormProps {
@@ -263,19 +263,13 @@ export function LoginForm({
                     Kata Sandi
                   </label>
                 </div>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-4 w-4 text-[#52525B]" />
-                  </div>
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pl-9 pr-3 py-2.5 bg-[#FAF8F5] border-2 border-[#09090B] text-xs md:text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#C4B5FD] transition-all"
-                  />
-                </div>
+                <PasswordInput
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  focusVariant="lilac"
+                />
               </div>
 
               <Button
@@ -335,19 +329,13 @@ export function LoginForm({
                 <label className="block text-xs font-bold uppercase tracking-wider text-[#09090B] mb-1.5">
                   Kata Sandi Petugas
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-4 w-4 text-[#52525B]" />
-                  </div>
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pl-9 pr-3 py-2.5 bg-[#FAF8F5] border-2 border-[#09090B] text-xs md:text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FEF08A] transition-all"
-                  />
-                </div>
+                <PasswordInput
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  focusVariant="yellow"
+                />
               </div>
 
               <Button

@@ -58,7 +58,7 @@ export function SuccessTicketModal({
 
         <p className="text-xs md:text-sm text-[#52525B] mb-5 leading-relaxed">
           Laporan kerusakan fasilitas fisik Anda telah masuk ke sistem antrean
-          verifikasi SIPANTAD. Simpan kode lacak di bawah ini untuk memantau
+          verifikasi SIPENAD. Simpan kode lacak di bawah ini untuk memantau
           perkembangan pengerjaan teknisi.
         </p>
 

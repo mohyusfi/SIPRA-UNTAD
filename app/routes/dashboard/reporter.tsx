@@ -36,7 +36,7 @@ type StatusFilterType = 'all' | 'pending' | 'in_progress' | 'completed' | 'other
 export const Route = createFileRoute('/dashboard/reporter')({
   head: () => ({
     meta: [
-      { title: 'Reporter Dashboard | SIPANTAD' },
+      { title: 'Reporter Dashboard | SIPENAD' },
       { name: 'robots', content: 'noindex, nofollow' },
     ],
   }),

@@ -1,7 +1,7 @@
 {
-  "name": "sipantad",
+  "name": "sipenad",
   "version": "1.0.0",
-  "description": "Sistem Informasi Pelaporan Infrastruktur Untad (SIPANTAD)",
+  "description": "Sistem Informasi Pelaporan Infrastruktur Untad (SIPENAD)",
   "type": "module",
   "scripts": {
     "dev": "vite",

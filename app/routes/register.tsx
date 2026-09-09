@@ -7,12 +7,12 @@ export const Route = createFileRoute('/register')({
   head: () => ({
     meta: [
       {
-        title: 'Daftar Akun Pelapor | SIPANTAD',
+        title: 'Daftar Akun Pelapor | SIPENAD',
       },
       {
         name: 'description',
         content:
-          'Buat akun pelapor SIPANTAD untuk melaporkan kerusakan fasilitas kampus Universitas Tadulako secara terverifikasi.',
+          'Buat akun pelapor SIPENAD untuk melaporkan kerusakan fasilitas kampus Universitas Tadulako secara terverifikasi.',
       },
       {
         name: 'robots',

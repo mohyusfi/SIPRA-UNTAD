@@ -489,7 +489,7 @@ export function ReportForm({ categories, locations }: ReportFormProps) {
             )}
           </Button>
           <p className="text-center text-[11px] text-[#52525B] mt-2 font-mono">
-            Sistem Pelaporan Resmi Universitas Tadulako (SIPANTAD)
+            Sistem Pelaporan Resmi Universitas Tadulako (SIPENAD)
           </p>
         </div>
       </form>

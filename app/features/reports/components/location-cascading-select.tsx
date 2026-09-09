@@ -439,7 +439,7 @@ export function LocationCascadingSelect({
 
             {/* Bottom Safe Footer */}
             <div className="p-3 border-t-2 border-[#09090B] bg-white flex justify-between items-center text-[11px] font-bold text-[#52525B]">
-              <span>SIPANTAD Lokasi</span>
+              <span>SIPENAD Lokasi</span>
               <button
                 type="button"
                 onClick={closeSheet}

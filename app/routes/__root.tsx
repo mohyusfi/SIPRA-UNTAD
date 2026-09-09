@@ -9,7 +9,7 @@ import {
 } from '@tanstack/react-router'
 import '../app.css'
 
-const SITE_URL = 'https://sipantad.vercel.app'
+const SITE_URL = 'https://sipenad.vercel.app'
 
 export const Route = createRootRoute({
   head: () => ({
@@ -22,16 +22,33 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'SIPANTAD - Sistem Informasi Pelaporan Infrastruktur Untad',
+        title: 'SIPENAD - Sistem Informasi Pelaporan Infrastruktur Untad',
       },
       {
         name: 'description',
         content:
-          'SIPANTAD: Sistem informasi pelaporan infrastruktur kampus Universitas Tadulako. Laporkan fasilitas rusak secara anonim, pantau status perbaikan real-time.',
+          'SIPENAD: Sistem informasi pelaporan infrastruktur kampus Universitas Tadulako. Laporkan fasilitas rusak secara anonim, pantau status perbaikan real-time.',
       },
       {
         name: 'og:site_name',
-        content: 'SIPANTAD',
+        content: 'SIPENAD',
+      },
+      {
+        name: 'og:title',
+        content: 'SIPENAD - Sistem Informasi Pelaporan Infrastruktur Untad',
+      },
+      {
+        name: 'og:description',
+        content:
+          'Sistem informasi pelaporan infrastruktur kampus Universitas Tadulako. Laporkan fasilitas rusak secara anonim, pantau status perbaikan real-time.',
+      },
+      {
+        name: 'og:url',
+        content: SITE_URL,
+      },
+      {
+        name: 'og:type',
+        content: 'website',
       },
       {
         name: 'og:locale',
@@ -40,6 +57,15 @@ export const Route = createRootRoute({
       {
         name: 'twitter:card',
         content: 'summary',
+      },
+      {
+        name: 'twitter:title',
+        content: 'SIPENAD - Sistem Informasi Pelaporan Infrastruktur Untad',
+      },
+      {
+        name: 'twitter:description',
+        content:
+          'Laporkan kerusakan infrastruktur kampus Universitas Tadulako secara anonim atau terverifikasi.',
       },
       {
         name: 'google-site-verification',
@@ -99,6 +125,7 @@ function RootComponent() {
   React.useEffect(() => {
     if (typeof document !== 'undefined') {
       const hasDid =
+        document.cookie.includes('sipenad_did=') ||
         document.cookie.includes('sipantad_did=') ||
         document.cookie.includes('sipra_did=')
       if (!hasDid) {
@@ -106,7 +133,7 @@ function RootComponent() {
           typeof crypto !== 'undefined' && crypto.randomUUID
             ? crypto.randomUUID()
             : Math.random().toString(36).slice(2)
-        document.cookie = `sipantad_did=${did}; path=/; max-age=31536000; SameSite=Lax`
+        document.cookie = `sipenad_did=${did}; path=/; max-age=31536000; SameSite=Lax`
       }
     }
   }, [])
