@@ -13,12 +13,12 @@ export const Route = createFileRoute('/login')({
   head: () => ({
     meta: [
       {
-        title: 'Masuk Sistem | SIPRA-UNTAD',
+        title: 'Masuk Sistem | SIPANTAD',
       },
       {
         name: 'description',
         content:
-          'Masuk ke sistem SIPRA-UNTAD untuk mengelola laporan kerusakan infrastruktur kampus Universitas Tadulako.',
+          'Masuk ke sistem SIPANTAD untuk mengelola laporan kerusakan infrastruktur kampus Universitas Tadulako.',
       },
       {
         name: 'robots',
@@ -44,14 +44,14 @@ function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#DDD6FE]">
-      <PublicNavbar subtitle="Masuk Sistem SIPRA-UNTAD" />
+      <PublicNavbar subtitle="Masuk Sistem SIPANTAD" />
 
       <main className="flex-1 flex items-center justify-center p-4 md:p-8 py-8 md:py-12">
         <LoginForm initialError={error} redirectUrl={redirectParam} />
       </main>
 
       <footer className="border-t-2 border-[#09090B] bg-[#FAF8F5] py-4 text-center text-xs font-mono text-[#52525B]">
-        Universitas Tadulako • Sistem Pelaporan Infrastruktur Kampus • WITA (UTC+8)
+        Universitas Tadulako • Sistem Informasi Pelaporan Infrastruktur Untad • WITA (UTC+8)
       </footer>
     </div>
   )

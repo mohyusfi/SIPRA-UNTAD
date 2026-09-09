@@ -15,7 +15,7 @@ export const Route = createFileRoute('/')({
   head: () => ({
     meta: [
       {
-        title: 'Lapor Kerusakan Fasilitas Kampus UNTAD | SIPRA-UNTAD',
+        title: 'Lapor Kerusakan Fasilitas Kampus UNTAD | SIPANTAD',
       },
       {
         name: 'description',
@@ -24,7 +24,7 @@ export const Route = createFileRoute('/')({
       },
       {
         name: 'og:title',
-        content: 'Lapor Kerusakan Fasilitas Kampus UNTAD | SIPRA-UNTAD',
+        content: 'Lapor Kerusakan Fasilitas Kampus UNTAD | SIPANTAD',
       },
       {
         name: 'og:description',
@@ -33,7 +33,7 @@ export const Route = createFileRoute('/')({
       },
       {
         name: 'og:url',
-        content: 'https://sipra-untad.vercel.app/',
+        content: 'https://sipantad.vercel.app/',
       },
       {
         name: 'og:type',
@@ -43,7 +43,7 @@ export const Route = createFileRoute('/')({
     links: [
       {
         rel: 'canonical',
-        href: 'https://sipra-untad.vercel.app/',
+        href: 'https://sipantad.vercel.app/',
       },
     ],
     scripts: [
@@ -52,9 +52,9 @@ export const Route = createFileRoute('/')({
         children: JSON.stringify({
           '@context': 'https://schema.org',
           '@type': 'WebApplication',
-          name: 'SIPRA-UNTAD',
-          alternateName: 'Sistem Pelaporan Infrastruktur Kampus',
-          url: 'https://sipra-untad.vercel.app/',
+          name: 'SIPANTAD',
+          alternateName: 'Sistem Informasi Pelaporan Infrastruktur Untad',
+          url: 'https://sipantad.vercel.app/',
           applicationCategory: 'GovernmentApplication',
           operatingSystem: 'Web',
           description:
@@ -215,7 +215,7 @@ function HomePage() {
       <footer className="bg-[#FAF8F5] border-t-2 border-[#09090B] py-6 px-4 text-xs font-bold text-[#52525B] text-center">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>
-            SIPRA-UNTAD • Sistem Pelaporan Infrastruktur Kampus Universitas Tadulako
+            SIPANTAD • Sistem Informasi Pelaporan Infrastruktur Untad
           </span>
           <span className="font-mono text-[11px]">
             Biro Umum dan Keuangan (BUK) UNTAD

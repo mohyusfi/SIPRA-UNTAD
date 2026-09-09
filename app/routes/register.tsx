@@ -7,12 +7,12 @@ export const Route = createFileRoute('/register')({
   head: () => ({
     meta: [
       {
-        title: 'Daftar Akun Pelapor | SIPRA-UNTAD',
+        title: 'Daftar Akun Pelapor | SIPANTAD',
       },
       {
         name: 'description',
         content:
-          'Buat akun pelapor SIPRA-UNTAD untuk melaporkan kerusakan fasilitas kampus Universitas Tadulako secara terverifikasi.',
+          'Buat akun pelapor SIPANTAD untuk melaporkan kerusakan fasilitas kampus Universitas Tadulako secara terverifikasi.',
       },
       {
         name: 'robots',
@@ -41,7 +41,7 @@ function RegisterPage() {
       </main>
 
       <footer className="border-t-2 border-[#09090B] bg-[#FAF8F5] py-4 text-center text-xs font-mono text-[#52525B]">
-        Universitas Tadulako • Sistem Pelaporan Infrastruktur Kampus • WITA (UTC+8)
+        Universitas Tadulako • Sistem Informasi Pelaporan Infrastruktur Untad • WITA (UTC+8)
       </footer>
     </div>
   )

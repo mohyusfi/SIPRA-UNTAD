@@ -55,7 +55,7 @@ import {
 export const Route = createFileRoute('/dashboard/admin')({
   head: () => ({
     meta: [
-      { title: 'Admin Dashboard | SIPRA-UNTAD' },
+      { title: 'Admin Dashboard | SIPANTAD' },
       { name: 'robots', content: 'noindex, nofollow' },
     ],
   }),

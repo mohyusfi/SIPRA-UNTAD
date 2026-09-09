@@ -1,5 +1,5 @@
-# Design System & UI/UX Specification: SIPRA-UNTAD
-**Sistem Pelaporan Infrastruktur Kampus Universitas Tadulako**
+# Design System & UI/UX Specification: SIPANTAD
+**Sistem Informasi Pelaporan Infrastruktur Untad**
 *Visual Direction: Soft-Pop Neo-Brutalism (Ref: Image Reference 1 & PRD.md)*
 
 ---
@@ -173,7 +173,7 @@ Mengikuti pola pada gambar referensi:
    - Separator vertikal garis halus hitam jika diperlukan.
 2. **Tier 2 (Main Navbar)**:
    - Tinggi: 64px, background: `#FAF8F5` (Warm Cream) dengan `border-b-2 border-t-2 border-[#09090B]`.
-   - **Kiri**: Logo `<Radio /> SIPRA-UNTAD` dalam kotak terbingkai border tebal (`border-r-2 border-[#09090B] h-full px-6 flex items-center`).
+   - **Kiri**: Logo `<Radio /> SIPANTAD` dalam kotak terbingkai border tebal (`border-r-2 border-[#09090B] h-full px-6 flex items-center`).
    - **Tengah**: Menu navigasi (*Beranda*, *Lapor*, *Cek Tiket*, *Statistik Publik*).
    - **Kanan**: Action icons dalam kotak border (`border-l-2 border-[#09090B]`), tombol pencarian cepat (`<Search />`) dan tombol favorit / notifikasi (`<Heart />`).
 
@@ -183,9 +183,9 @@ Mengikuti pola pada gambar referensi:
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ Tier 1:                                              Bantuan | Masuk | Info │
-├──────────────┬──────────────────────────────────────────┬───────┬───────────┤
-│ [Radio SIPRA]│ Beranda   Lapor Masalah   Lacak Status   │[Heart]│  [Search] │
-├──────────────┴──────────────────────────────────────────┴───────┴───────────┤
+├──────────────────┬──────────────────────────────────────┬───────┬───────────┤
+│ [Radio SIPANTAD] │ Beranda   Lapor Masalah   Lacak Status   │[Heart]│  [Search] │
+├──────────────────┴──────────────────────────────────────┴───────┴───────────┤
 │                                                                             │
 │  Laporkan kerusakan &                               ┌─────────────────────┐ │
 │  kawal fasilitas kampus      ┌───────────────┐      │   [ Line-art Mockup]│ │
@@ -270,11 +270,11 @@ Sistem melarang keras penggunaan emote/simbol Unicode mentah (seperti emoji HP, 
 </div>
 ```
 
-#### Pemetaan Lengkap Ikon Lucide untuk SIPRA-UNTAD
+#### Pemetaan Lengkap Ikon Lucide untuk SIPANTAD
 
 | Kategori | Nama Komponen Lucide | Penggunaan dalam Antarmuka |
 |---|---|---|
-| **Identitas & Navigasi** | `<Radio />` | Logo brand SIPRA-UNTAD |
+| **Identitas & Navigasi** | `<Radio />` | Logo brand SIPANTAD |
 | | `<Search />` | Tombol dan input pencarian tiket |
 | | `<Heart />` | Fitur bookmark / favorit pantau |
 | | `<HelpCircle />` | Tautan pusat bantuan sivitas |

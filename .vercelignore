@@ -1,0 +1,8 @@
+.git
+.codegraph
+.output
+.nitro
+.tanstack
+node_modules
+*.log
+.env*

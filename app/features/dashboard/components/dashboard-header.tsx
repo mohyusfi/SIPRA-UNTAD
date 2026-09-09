@@ -85,7 +85,7 @@ export function DashboardHeader({
           </div>
           <div>
             <div className="font-extrabold text-base md:text-xl tracking-tight text-[#09090B] leading-none">
-              SIPRA-UNTAD
+              SIPANTAD
             </div>
             <div className="text-[9px] md:text-[10px] uppercase font-bold text-[#52525B] tracking-wider mt-0.5">
               Dashboard Panel

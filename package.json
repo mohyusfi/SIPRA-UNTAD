@@ -1,7 +1,7 @@
 {
-  "name": "project-klh",
+  "name": "sipantad",
   "version": "1.0.0",
-  "description": "Sistem Pelaporan Infrastruktur Kampus (SIPRA-UNTAD)",
+  "description": "Sistem Informasi Pelaporan Infrastruktur Untad (SIPANTAD)",
   "type": "module",
   "scripts": {
     "dev": "vite",

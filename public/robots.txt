@@ -3,4 +3,4 @@ Allow: /
 Disallow: /dashboard/
 Disallow: /api/
 
-Sitemap: https://sipra-untad.vercel.app/sitemap.xml
+Sitemap: https://sipantad.vercel.app/sitemap.xml

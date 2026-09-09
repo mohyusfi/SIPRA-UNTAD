@@ -124,7 +124,7 @@ export function ChangePasswordModal({
                 Ganti Kata Sandi
               </h3>
               <p className="text-[11px] font-medium text-[#52525B] mt-1">
-                Perbarui kata sandi akun SIPRA-UNTAD Anda
+                Perbarui kata sandi akun SIPANTAD Anda
               </p>
             </div>
           </div>

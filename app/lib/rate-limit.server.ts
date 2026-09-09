@@ -51,7 +51,7 @@ export async function resolveRateLimitKey(
     }
 
     const cookieMap = parseCookieHeader(headers['cookie'])
-    deviceId = cookieMap.get('sipra_did') || ''
+    deviceId = cookieMap.get('sipantad_did') || cookieMap.get('sipra_did') || ''
   } catch {
     // Fallback if request context is unavailable
   }

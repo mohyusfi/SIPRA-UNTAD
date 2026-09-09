@@ -1,12 +1,12 @@
-# Presentasi SIPRA-UNTAD: Alur Empat Role
+# Presentasi SIPANTAD: Alur Empat Role
 
-**Proyek:** SIPRA-UNTAD (Sistem Pelaporan Infrastruktur Kampus Universitas Tadulako)  
+**Proyek:** SIPANTAD (Sistem Informasi Pelaporan Infrastruktur Untad)  
 **Tujuan:** Mendigitalisasi proses pelaporan hingga penyelesaian kerusakan fasilitas kampus secara terstruktur, transparan, dan dapat dipantau.  
 **Commit acuan terbaru:** `9e9edc4` - perbaikan akses tombol membuat laporan dan ergonomi sentuhan pada perangkat seluler.
 
 ## Pembukaan - 30 Detik
 
-Selamat [pagi/siang]. Kami akan mempresentasikan SIPRA-UNTAD, sebuah aplikasi web responsif untuk pelaporan kerusakan infrastruktur kampus.
+Selamat [pagi/siang]. Kami akan mempresentasikan SIPANTAD, sebuah aplikasi web responsif untuk pelaporan infrastruktur kampus.
 
 Sistem ini menghubungkan empat pihak dalam satu alur kerja: pelapor, administrator sarana-prasarana, teknisi lapangan, dan pimpinan sebagai pemantau. Dengan demikian, laporan tidak berhenti pada pengaduan, tetapi dapat ditelusuri sampai bukti perbaikannya diverifikasi.
 
@@ -169,7 +169,7 @@ Melalui role ini, data operasional dapat digunakan sebagai dasar penentuan prior
 
 ## Penutup - 30 Detik
 
-SIPRA-UNTAD membentuk satu siklus layanan yang utuh: pelapor mengirim bukti masalah, admin memverifikasi dan mendisposisikan, teknisi menangani serta mengunggah bukti perbaikan, admin mengonfirmasi hasil, dan pimpinan memantau kualitas layanan melalui data analitik.
+SIPANTAD membentuk satu siklus layanan yang utuh: pelapor mengirim bukti masalah, admin memverifikasi dan mendisposisikan, teknisi menangani serta mengunggah bukti perbaikan, admin mengonfirmasi hasil, dan pimpinan memantau kualitas layanan melalui data analitik.
 
 Mesin status laporan memastikan setiap tahap jelas dan dapat ditelusuri:
 

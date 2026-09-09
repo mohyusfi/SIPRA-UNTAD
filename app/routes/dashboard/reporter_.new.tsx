@@ -8,7 +8,7 @@ import { ReportForm } from '~/features/reports/components/report-form'
 export const Route = createFileRoute('/dashboard/reporter_/new')({
   head: () => ({
     meta: [
-      { title: 'Buat Laporan Baru | SIPRA-UNTAD' },
+      { title: 'Buat Laporan Baru | SIPANTAD' },
       { name: 'robots', content: 'noindex, nofollow' },
     ],
   }),

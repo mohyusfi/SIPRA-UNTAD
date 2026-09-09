@@ -8,9 +8,8 @@ import {
   useRouterState,
 } from '@tanstack/react-router'
 import '../app.css'
-import { name } from 'drizzle-orm';
 
-const SITE_URL = 'https://sipra-untad.vercel.app'
+const SITE_URL = 'https://sipantad.vercel.app'
 
 export const Route = createRootRoute({
   head: () => ({
@@ -23,16 +22,16 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'SIPRA-UNTAD - Sistem Pelaporan Infrastruktur Kampus',
+        title: 'SIPANTAD - Sistem Informasi Pelaporan Infrastruktur Untad',
       },
       {
         name: 'description',
         content:
-          'SIPRA-UNTAD: Sistem pelaporan kerusakan infrastruktur kampus Universitas Tadulako. Laporkan fasilitas rusak secara anonim, pantau status perbaikan real-time.',
+          'SIPANTAD: Sistem informasi pelaporan infrastruktur kampus Universitas Tadulako. Laporkan fasilitas rusak secara anonim, pantau status perbaikan real-time.',
       },
       {
         name: 'og:site_name',
-        content: 'SIPRA-UNTAD',
+        content: 'SIPANTAD',
       },
       {
         name: 'og:locale',
@@ -99,13 +98,15 @@ function NavigationProgressBar() {
 function RootComponent() {
   React.useEffect(() => {
     if (typeof document !== 'undefined') {
-      const hasDid = document.cookie.includes('sipra_did=')
+      const hasDid =
+        document.cookie.includes('sipantad_did=') ||
+        document.cookie.includes('sipra_did=')
       if (!hasDid) {
         const did =
           typeof crypto !== 'undefined' && crypto.randomUUID
             ? crypto.randomUUID()
             : Math.random().toString(36).slice(2)
-        document.cookie = `sipra_did=${did}; path=/; max-age=31536000; SameSite=Lax`
+        document.cookie = `sipantad_did=${did}; path=/; max-age=31536000; SameSite=Lax`
       }
     }
   }, [])

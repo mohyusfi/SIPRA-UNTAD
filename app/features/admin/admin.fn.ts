@@ -253,7 +253,7 @@ export const getAdminReportDetail = createServerFn({ method: 'GET' })
         fromStatus: t.fromStatus,
         toStatus: t.toStatus,
         notes: t.notes,
-        actorName: t.actor?.name || 'Sistem SIPRA',
+        actorName: t.actor?.name || 'Sistem SIPANTAD',
         createdAt: t.createdAt,
       })),
     }

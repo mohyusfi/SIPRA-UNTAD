@@ -16,6 +16,7 @@ export const auth = betterAuth({
       'localhost:3000',
       'localhost:3001',
       'localhost:5173',
+      'sipantad.vercel.app',
       'sipra-untad.vercel.app',
       '*.vercel.app',
     ],
@@ -26,6 +27,7 @@ export const auth = betterAuth({
     'http://localhost:3001',
     'http://localhost:5173',
     'https://*.vercel.app',
+    'https://sipantad.vercel.app',
     'https://sipra-untad.vercel.app',
   ],
   advanced: {
