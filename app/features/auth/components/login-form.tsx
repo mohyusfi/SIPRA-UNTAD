@@ -13,7 +13,6 @@ import {
 import { authClient } from '~/lib/auth-client'
 import { Button } from '~/components/ui/button'
 import { formatErrorMessage } from '~/lib/utils'
-import { QuickFillDemo } from './quick-fill-demo'
 
 interface LoginFormProps {
   initialError?: string
@@ -107,17 +106,6 @@ export function LoginForm({
       setErrorMsg(formatErrorMessage(err, 'Terjadi kesalahan sistem saat proses masuk.'))
       setIsLoading(false)
     }
-  }
-
-  const handleQuickFill = (
-    fillEmail: string,
-    fillPass: string,
-    tab: 'reporter' | 'staff',
-  ) => {
-    setEmail(fillEmail)
-    setPassword(fillPass)
-    setActiveTab(tab)
-    setErrorMsg(null)
   }
 
   return (
@@ -387,9 +375,6 @@ export function LoginForm({
           </Link>
         </div>
       </div>
-
-      {/* Demo Account Quick Fill Widget */}
-      <QuickFillDemo onSelect={handleQuickFill} />
     </div>
   )
 }
