@@ -23,20 +23,20 @@ export const Route = createFileRoute('/')({
           'Laporkan kerusakan infrastruktur kampus Universitas Tadulako secara anonim atau terverifikasi. Pantau status perbaikan real-time dengan kode tiket resmi.',
       },
       {
-        name: 'og:title',
+        property: 'og:title',
         content: 'Lapor Kerusakan Fasilitas Kampus UNTAD | SIPENAD',
       },
       {
-        name: 'og:description',
+        property: 'og:description',
         content:
           'Laporkan kerusakan infrastruktur kampus Universitas Tadulako secara anonim atau terverifikasi. Pantau status perbaikan real-time.',
       },
       {
-        name: 'og:url',
+        property: 'og:url',
         content: 'https://sipenad.vercel.app/',
       },
       {
-        name: 'og:type',
+        property: 'og:type',
         content: 'website',
       },
     ],
@@ -51,26 +51,41 @@ export const Route = createFileRoute('/')({
         type: 'application/ld+json',
         children: JSON.stringify({
           '@context': 'https://schema.org',
-          '@type': 'WebApplication',
-          name: 'SIPENAD',
-          alternateName: 'Sistem Informasi Pelaporan Infrastruktur Untad',
-          url: 'https://sipenad.vercel.app/',
-          applicationCategory: 'GovernmentApplication',
-          operatingSystem: 'Web',
-          description:
-            'Sistem pelaporan kerusakan infrastruktur kampus Universitas Tadulako. Laporkan fasilitas rusak secara anonim, pantau status perbaikan real-time.',
-          provider: {
-            '@type': 'EducationalOrganization',
-            name: 'Universitas Tadulako',
-            alternateName: 'UNTAD',
-            address: {
-              '@type': 'PostalAddress',
-              addressLocality: 'Palu',
-              addressRegion: 'Sulawesi Tengah',
-              addressCountry: 'ID',
+          '@graph': [
+            {
+              '@type': 'WebSite',
+              '@id': 'https://sipenad.vercel.app/#website',
+              name: 'SIPENAD',
+              alternateName: [
+                'SIPENAD UNTAD',
+                'Sistem Informasi Pelaporan Infrastruktur Untad',
+              ],
+              url: 'https://sipenad.vercel.app/',
             },
-          },
-          inLanguage: 'id',
+            {
+              '@type': 'WebApplication',
+              '@id': 'https://sipenad.vercel.app/#webapp',
+              name: 'SIPENAD',
+              alternateName: 'Sistem Informasi Pelaporan Infrastruktur Untad',
+              url: 'https://sipenad.vercel.app/',
+              applicationCategory: 'GovernmentApplication',
+              operatingSystem: 'Web',
+              description:
+                'Sistem pelaporan kerusakan infrastruktur kampus Universitas Tadulako. Laporkan fasilitas rusak secara anonim, pantau status perbaikan real-time.',
+              provider: {
+                '@type': 'EducationalOrganization',
+                name: 'Universitas Tadulako',
+                alternateName: 'UNTAD',
+                address: {
+                  '@type': 'PostalAddress',
+                  addressLocality: 'Palu',
+                  addressRegion: 'Sulawesi Tengah',
+                  addressCountry: 'ID',
+                },
+              },
+              inLanguage: 'id',
+            },
+          ],
         }),
       },
     ],

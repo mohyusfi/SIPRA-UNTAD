@@ -30,28 +30,32 @@ export const Route = createRootRoute({
           'SIPENAD: Sistem informasi pelaporan infrastruktur kampus Universitas Tadulako. Laporkan fasilitas rusak secara anonim, pantau status perbaikan real-time.',
       },
       {
+        property: 'og:site_name',
+        content: 'SIPENAD',
+      },
+      {
         name: 'og:site_name',
         content: 'SIPENAD',
       },
       {
-        name: 'og:title',
+        property: 'og:title',
         content: 'SIPENAD - Sistem Informasi Pelaporan Infrastruktur Untad',
       },
       {
-        name: 'og:description',
+        property: 'og:description',
         content:
           'Sistem informasi pelaporan infrastruktur kampus Universitas Tadulako. Laporkan fasilitas rusak secara anonim, pantau status perbaikan real-time.',
       },
       {
-        name: 'og:url',
+        property: 'og:url',
         content: SITE_URL,
       },
       {
-        name: 'og:type',
+        property: 'og:type',
         content: 'website',
       },
       {
-        name: 'og:locale',
+        property: 'og:locale',
         content: 'id_ID',
       },
       {
@@ -75,6 +79,18 @@ export const Route = createRootRoute({
     links: [
       {
         rel: 'icon',
+        type: 'image/png',
+        sizes: '48x48',
+        href: '/favicon-48x48.png',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '96x96',
+        href: '/favicon-96x96.png',
+      },
+      {
+        rel: 'icon',
         type: 'image/x-icon',
         href: '/favicon.ico',
       },
@@ -82,6 +98,15 @@ export const Route = createRootRoute({
         rel: 'shortcut icon',
         type: 'image/x-icon',
         href: '/favicon.ico',
+      },
+      {
+        rel: 'apple-touch-icon',
+        sizes: '180x180',
+        href: '/apple-touch-icon.png',
+      },
+      {
+        rel: 'manifest',
+        href: '/site.webmanifest',
       },
       {
         rel: 'canonical',
