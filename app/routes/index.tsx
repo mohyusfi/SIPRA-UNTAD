@@ -40,12 +40,6 @@ export const Route = createFileRoute('/')({
         content: 'website',
       },
     ],
-    links: [
-      {
-        rel: 'canonical',
-        href: 'https://sipenad.vercel.app/',
-      },
-    ],
     scripts: [
       {
         type: 'application/ld+json',
@@ -68,7 +62,6 @@ export const Route = createFileRoute('/')({
               name: 'SIPENAD',
               alternateName: 'Sistem Informasi Pelaporan Infrastruktur Untad',
               url: 'https://sipenad.vercel.app/',
-              applicationCategory: 'GovernmentApplication',
               operatingSystem: 'Web',
               description:
                 'Sistem pelaporan kerusakan infrastruktur kampus Universitas Tadulako. Laporkan fasilitas rusak secara anonim, pantau status perbaikan real-time.',
