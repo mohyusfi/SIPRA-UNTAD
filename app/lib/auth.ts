@@ -2,6 +2,7 @@ import { betterAuth } from 'better-auth'
 import { APIError } from 'better-auth/api'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
+import { bearer, oauthPopup } from 'better-auth/plugins'
 import { eq } from 'drizzle-orm'
 import { db } from '~/db'
 import * as schema from '~/db/schema'
@@ -80,5 +81,5 @@ export const auth = betterAuth({
   onAPIError: {
     errorURL: '/login',
   },
-  plugins: [tanstackStartCookies()],
+  plugins: [tanstackStartCookies(), bearer(), oauthPopup()],
 })

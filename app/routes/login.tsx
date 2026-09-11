@@ -6,6 +6,7 @@ import { LoginForm } from '~/features/auth/components/login-form'
 
 const loginSearchSchema = z.object({
   error: z.string().optional(),
+  error_description: z.string().optional(),
   redirect: z.string().optional(),
 })
 

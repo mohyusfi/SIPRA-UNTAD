@@ -19,6 +19,23 @@ interface LoginFormProps {
   redirectUrl?: string
 }
 
+function getInitialErrorMessage(err?: string): string | null {
+  if (!err) return null
+  switch (err) {
+    case 'staff_oauth_forbidden':
+      return 'Akun staf/petugas wajib masuk menggunakan kata sandi institusi pada tab Petugas.'
+    case 'access_denied':
+      return null
+    case 'state_not_found':
+    case 'state_mismatch':
+    case 'invalid_code':
+    case 'oauth_cancelled':
+      return 'Sesi otentikasi Google telah kedaluwarsa atau dibatalkan. Silakan coba kembali.'
+    default:
+      return 'Gagal melakukan otentikasi. Silakan coba kembali.'
+  }
+}
+
 export function LoginForm({
   initialError,
   redirectUrl = '/dashboard',
@@ -28,25 +45,115 @@ export function LoginForm({
   )
   const [email, setEmail] = React.useState('')
   const [password, setPassword] = React.useState('')
-  const [errorMsg, setErrorMsg] = React.useState<string | null>(
-    initialError === 'staff_oauth_forbidden'
-      ? 'Akun staf/petugas wajib masuk menggunakan kata sandi institusi pada tab Petugas.'
-      : null,
+  const [errorMsg, setErrorMsg] = React.useState<string | null>(() =>
+    getInitialErrorMessage(initialError),
   )
   const [isLoading, setIsLoading] = React.useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false)
   const [successMsg, setSuccessMsg] = React.useState<string | null>(null)
 
+  React.useEffect(() => {
+    if (initialError) {
+      setErrorMsg(getInitialErrorMessage(initialError))
+      if (initialError === 'staff_oauth_forbidden') {
+        setActiveTab('staff')
+      }
+      setIsGoogleLoading(false)
+      setIsLoading(false)
+    }
+  }, [initialError])
+
+  React.useEffect(() => {
+    const resetLoadingState = () => {
+      setIsGoogleLoading(false)
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        resetLoadingState()
+      }
+    }
+
+    window.addEventListener('pageshow', resetLoadingState)
+    window.addEventListener('focus', resetLoadingState)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      window.removeEventListener('pageshow', resetLoadingState)
+      window.removeEventListener('focus', resetLoadingState)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [])
+
+  React.useEffect(() => {
+    if (!isGoogleLoading) return
+
+    const timeout = setTimeout(() => {
+      setIsGoogleLoading(false)
+    }, 15000)
+
+    return () => clearTimeout(timeout)
+  }, [isGoogleLoading])
+
   const handleGoogleSignIn = async () => {
     setErrorMsg(null)
     setIsGoogleLoading(true)
     try {
-      await authClient.signIn.social({
+      const res = await (authClient.signIn as any).popup({
         provider: 'google',
         callbackURL: redirectUrl,
       })
+
+      if (res?.error) {
+        if (res.error.code === 'POPUP_CLOSED') {
+          setIsGoogleLoading(false)
+          return
+        }
+        if (res.error.code === 'POPUP_BLOCKED') {
+          await authClient.signIn.social({
+            provider: 'google',
+            callbackURL: redirectUrl,
+            errorCallbackURL: `/login${redirectUrl ? `?redirect=${encodeURIComponent(redirectUrl)}` : ''}`,
+          })
+          return
+        }
+        setErrorMsg(
+          formatErrorMessage(
+            res.error.message || res.error,
+            'Gagal terhubung dengan layanan Google.',
+          ),
+        )
+        setIsGoogleLoading(false)
+        return
+      }
+
+      if (res?.data) {
+        setSuccessMsg('Login berhasil! Mengalihkan ke dashboard...')
+        const sessionRes = await authClient.getSession()
+        const role = (sessionRes?.data?.user as any)?.role || 'reporter'
+        let targetUrl = redirectUrl
+        if (!redirectUrl || redirectUrl === '/dashboard') {
+          switch (role) {
+            case 'admin':
+              targetUrl = '/dashboard/admin'
+              break
+            case 'technician':
+              targetUrl = '/dashboard/technician'
+              break
+            case 'monitor':
+              targetUrl = '/dashboard/monitor'
+              break
+            case 'reporter':
+            default:
+              targetUrl = '/dashboard/reporter'
+              break
+          }
+        }
+        window.location.href = targetUrl
+      }
     } catch (err: unknown) {
       setErrorMsg(formatErrorMessage(err, 'Gagal terhubung dengan layanan Google.'))
+    } finally {
       setIsGoogleLoading(false)
     }
   }
