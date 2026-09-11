@@ -22,7 +22,7 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'SIPENAD - Sistem Informasi Pelaporan Infrastruktur Untad',
+        title: 'SIPENAD - Sistem Informasi Pelaporan Infrastruktur UNTAD',
       },
       {
         name: 'description',
@@ -34,17 +34,13 @@ export const Route = createRootRoute({
         content: 'SIPENAD',
       },
       {
-        name: 'og:site_name',
-        content: 'SIPENAD',
-      },
-      {
         property: 'og:title',
-        content: 'SIPENAD - Sistem Informasi Pelaporan Infrastruktur Untad',
+        content: 'SIPENAD - Sistem Informasi Pelaporan Infrastruktur UNTAD',
       },
       {
         property: 'og:description',
         content:
-          'Sistem informasi pelaporan infrastruktur kampus Universitas Tadulako. Laporkan fasilitas rusak secara anonim, pantau status perbaikan real-time.',
+          'SIPENAD adalah sistem informasi pelaporan infrastruktur Universitas Tadulako. Laporkan fasilitas kampus yang rusak secara anonim dan pantau status perbaikannya.',
       },
       {
         property: 'og:url',
